@@ -3,6 +3,8 @@ open Seq
 
 type t = Z.t Seq.t
 
+let terms cf = cf
+
 let first cf = match cf () with Nil -> assert false | Cons (a0, a) -> a0, a
 let int_part cf = fst (first cf)
 
@@ -14,6 +16,13 @@ let convergents cf =
         let kn = Z.(an * kn_1 + kn_2) in
         Cons (Q.{ num = hn; den = kn }, seq hn_1 hn kn_1 kn cf) in
   seq Z.zero Z.one Z.one Z.zero cf
+
+let nth_convergent n cf =
+  let rec nth n cv = match cv () with
+    | Nil -> invalid_arg "nth_convergent"
+    | Cons (q, _) when n = 0 -> q
+    | Cons (_, cv) -> nth (n - 1) cv in
+  nth n (convergents cf)
 
 let print_precision = ref 5
 let set_print_precision = (:=) print_precision
@@ -28,20 +37,42 @@ let print fmt cf =
   Format.fprintf fmt "[@[<hov 2> %a;@ %a@]]"
     Z.pp_print a0 (print !print_precision) a
 
+(** {2 constructors} *)
+
+let of_int n =
+  if n < 0 then invalid_arg "of_int";
+  return (Z.of_int n)
+
+let zero = of_int 0
+let one  = of_int 1
+
+let of_z z =
+  if Z.sign z < 0 then invalid_arg "of_z";
+  return z
+
+let of_q Q.{ num; den } =
+  assert (Z.sign den > 0);
+  let rec euclid p q =
+    if q = Z.zero then empty
+    else let a, r = Z.div_rem p q in
+         fun () -> Cons (a, euclid q r) in
+  let q, r = Z.div_rem num den in
+  fun () -> Cons (q, euclid den r)
+
 (** {2 Some continued fractions} *)
 
 (* phi = [1; (1)] *)
 let rec phi () = Cons (Z.one, phi)
 
 let pi =
-  let a001203 =
+  let rec cf = function
+    | [] -> failwith "precision of pi exceeded"
+    | ai :: a -> fun () -> Cons (Z.of_int ai, cf a) in
+  cf
+    (* https://oeis.org/A001203 *)
     [3; 7; 15; 1; 292; 1; 1; 1; 2; 1; 3; 1; 14; 2; 1; 1; 2; 2; 2; 2; 1; 84;
         2; 1; 1; 15; 3; 13; 1; 4; 2; 6; 6; 99; 1; 2; 2; 6; 3; 5; 1; 1; 6; 8;
         1; 7; 1; 2; 3; 7; 1; 2; 1; 1; 12; 1; 1; 1; 3; 1; 1; 8; 1; 1; 2; 1; 6;
         1; 1; 5; 2; 2; 3; 1; 2; 4; 4; 16; 1; 161; 45; 1; 22; 1; 2; 2; 1; 4;
-        1; 2; 24; 1; 2; 1; 3; 1; 2; 1] in
-  let rec cf = function
-    | [] -> failwith "precision of pi exceeded"
-    | ai :: a -> fun () -> Cons (Z.of_int ai, cf a) in
-  cf a001203
+        1; 2; 24; 1; 2; 1; 3; 1; 2; 1]
 
