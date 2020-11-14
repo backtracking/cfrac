@@ -1,0 +1,9 @@
+(library
+ (name cfrac)
+ (modules cfrac)
+ (libraries zarith))
+
+(test
+ (name test)
+ (modules test)
+ (libraries cfrac))
