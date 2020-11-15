@@ -76,12 +76,18 @@ val of_seq: Z.t Seq.t -> t
 val of_fun: (int -> Z.t) -> t
 (** The continued fraction [f(0); f(1), f(2), ...].
     Will raise [Invalid_argument] if any term is negative.
-    The terms will stop at the first i>0 such that f(i)=0, so that it can be
-    used to describe a finite continued fraction. *)
+    The terms will stop at the first i>0 such that f(i)=0, if any,
+    so that it can also be used to describe a finite continued fraction. *)
 
 val of_list: Z.t list -> t
 (** Will raise [Invalid_argument] if the first term is negative or if any
     other term is nonpositive. *)
+
+val periodic: Z.t list -> (int -> Z.t list) -> t
+(** [periodic prefix f] builds the continued fraction obtained by appending
+    the list [prefix], [f 0], [f 1], etc.
+    Each list must be nonempty. The first term must be nonnegative, and next terms
+    must be positive. Otherwise, [Invalid_argument] is raised. *)
 
 (** {2 Some continued fractions} *)
 
@@ -92,3 +98,4 @@ val pi: t
 (** Only contains the first 100 terms of the continued fraction of pi.
     Fails if we try to access terms beyond. *)
 
+val e: t

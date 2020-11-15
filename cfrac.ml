@@ -104,6 +104,20 @@ let of_list = function
   | z :: _ when Z.sign z < 0 -> invalid_arg "of_list"
   | z :: l -> fun () -> Cons (z, seq_of_list l)
 
+let rec list_concat l1 s2 () = match l1 with
+  | [] -> s2 ()
+  | z ::  _ when Z.sign z <= 0 -> invalid_arg "periodic"
+  | z :: l -> Cons (z, list_concat l s2)
+
+let rec list_flatten f i () = match f i with
+  | [] -> invalid_arg "periodic"
+  | li -> list_concat li (list_flatten f (i+1)) ()
+
+let periodic prefix f = match prefix with
+  | [] -> invalid_arg "periodic"
+  | z :: _ when Z.sign z < 0 -> invalid_arg "periodic"
+  | z :: l -> fun () -> Cons (z, list_concat l (list_flatten f 0))
+
 (** {2 Some continued fractions} *)
 
 (* phi = [1; (1)] *)
@@ -121,3 +135,5 @@ let pi =
         1; 1; 5; 2; 2; 3; 1; 2; 4; 4; 16; 1; 161; 45; 1; 22; 1; 2; 2; 1; 4;
         1; 2; 24; 1; 2; 1; 3; 1; 2; 1]
 
+(* e = [2; 1,2,1, 1,4,1, 1,6,1, 1,8,1, ...] = [2; (1, 2(n+1), 1)] *)
+let e = periodic [Z.of_int 2] (fun n -> [Z.one; Z.of_int (2*(n+1)); Z.one])

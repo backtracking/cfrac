@@ -36,6 +36,14 @@ let () = display "q2" (of_q (Q.of_string "103993/33102"))
 
 let () = assert (nth_convergent 1 (of_float 0.5) = Q.of_string "1/2")
 
+let () = display "e" e
+let () =
+  let q = nth_convergent 14 e in
+  printf "e ~ %a = %.10f@.@." Q.pp_print q (Q.to_float q)
+
+let () =
+  display "tan(1)" (periodic [Z.one] (fun n -> [Z.of_int (2*n+1); Z.one]))
+
 (* Examples from "Continued Fraction Arithmetic" by Bill Gosper
    See for instance https://perl.plover.com/classes/cftalk/INFO/gosper.txt *)
 
