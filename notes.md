@@ -10,6 +10,8 @@
 * best rational approximation
 * arithmetic operations (Gosper)
 
+* of_fun: rather stop whenever f(i)=0 ?
+
 # Sources
 
   https://perl.plover.com/classes/cftalk/INFO/

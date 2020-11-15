@@ -73,6 +73,23 @@ let of_q Q.{ num; den } =
   let q, r = Z.div_rem num den in
   fun () -> Cons (q, euclid den r)
 
+let of_seq s =
+  let check z = if Z.sign z <= 0 then invalid_arg "of_seq"; z in
+  match s () with
+  | Nil -> invalid_arg "of_seq"
+  | Cons (z, s) -> if Z.sign z < 0 then invalid_arg "of_seq";
+                   fun () -> Cons (z, Seq.map check s)
+
+let of_fun f =
+  let rec loop i () =
+    let z = f i in
+    if Z.sign z <= 0 then invalid_arg "of_fun";
+    Cons (z, loop (i + 1)) in
+  fun () ->
+    let z = f 0 in
+    if Z.sign z < 0 then invalid_arg "of_fun";
+    Cons (z, loop 1)
+
 (** {2 Some continued fractions} *)
 
 (* phi = [1; (1)] *)

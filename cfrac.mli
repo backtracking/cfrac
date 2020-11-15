@@ -60,10 +60,23 @@ val of_int: int -> t
 val of_z  : Z.t -> t
 val of_q  : Q.t -> t
 
+val of_seq: Z.t Seq.t -> t
+(** Will raise [Invalid_argument] if the first term is negative,
+    or if any of the next terms is nonpositive.
+    Note that such verification is only performed when the term is accessed,
+    so it could be much later, or even never. *)
+
+val of_fun: (int -> Z.t) -> t
+(** The continued fraction [f(0); f(1), f(2), ...].
+    Will raise [Invalid_argument] if the first term is negative,
+    or if any of the next terms is nonpositive.
+    Note that such verification is only performed when the term is accessed,
+    so it could be much later, or even never. *)
+
 (** {2 Some continued fractions} *)
 
 val phi: t
-(** the golden ratio i.e. (1+sqrt(5))/2 *)
+(** The golden ratio i.e. (1+sqrt(5))/2. *)
 
 val pi: t
 (** Only contains the first 100 terms of the continued fraction of pi.
