@@ -44,6 +44,13 @@ let () =
 let () =
   display "tan(1)" (periodic [Z.one] (fun n -> [Z.of_int (2*n+1); Z.one]))
 
+let () =
+  let x = of_q (Q.of_string "13/11") in
+  display "13/11" x;
+  display "x+1/2" (ihomography ~a:1 ~b:2 ~c:2 ~d:0 x);
+  display "13/11 * 11" (imul 11 x);
+  display "13/11 / 13" (idiv x 13)
+
 (* Examples from "Continued Fraction Arithmetic" by Bill Gosper
    See for instance https://perl.plover.com/classes/cftalk/INFO/gosper.txt *)
 
@@ -61,4 +68,6 @@ let cf = of_fun (function
 let () = display "" cf
 let () = display "" (of_list (List.map Z.of_int [39; 2; 1; 2; 2; 1; 4]))
 
-
+let () =
+  let cf = ihomography ~a:1 ~b:1 ~c:(-1) ~d:1 e in
+  display "coth(1/2) = (e+1)/(e-1)" cf

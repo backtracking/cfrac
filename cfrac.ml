@@ -118,6 +118,49 @@ let periodic prefix f = match prefix with
   | z :: _ when Z.sign z < 0 -> invalid_arg "periodic"
   | z :: l -> fun () -> Cons (z, list_concat l (list_flatten f 0))
 
+(** {2 Homographic functions (Bill Gosper, 1972)}
+
+  Resources:
+  - https://perl.plover.com/classes/cftalk/INFO/gosper.txt
+  - https://github.com/mjdominus/cf/
+*)
+
+(* (a+bx)/(c+dx) *)
+let homography ~a ~b ~c ~d x =
+  let debug = false in
+  let rec next a b c d x () =
+    if debug then
+      Format.eprintf "state is %a %a / %a %a@."
+        Z.pp_print a Z.pp_print b Z.pp_print c Z.pp_print d;
+    if c = Z.zero && d = Z.zero then
+      Nil
+    else
+      (* use float to handle infinity *)
+      let b1 = floor (Z.to_float a /. Z.to_float c) in
+      let b2 = floor (Z.to_float b /. Z.to_float d) in
+      if b1 = b2 then begin (* egest *)
+        let q = Z.fdiv a c in
+        if debug then Format.eprintf "egest %a@." Z.pp_print q;
+        Cons (q, next c d Z.(a - q * c) Z.(b - q * d) x)
+      end else (* ingest *)
+        match x () with
+        | Nil ->
+            next b b d d x ()
+        | Cons (p, x) ->
+            if debug then Format.eprintf "ingest %a@." Z.pp_print p;
+            next b Z.(a + p * b) d Z.(c + p * d) x ()
+      in
+  next a b c d x
+
+let ihomography ~a ~b ~c ~d =
+  homography ~a:(Z.of_int a) ~b:(Z.of_int b) ~c:(Z.of_int c) ~d:(Z.of_int d)
+
+let inv = ihomography ~a:1 ~b:0 ~c:0 ~d:1
+let zmul b = homography ~a:Z.zero ~b ~c:Z.one ~d:Z.zero
+let imul b = ihomography ~a:0 ~b ~c:1 ~d:0
+let zdiv x c = homography ~a:Z.zero ~b:Z.one ~c ~d:Z.zero x
+let idiv x c = ihomography ~a:0 ~b:1 ~c ~d:0 x
+
 (** {2 Some continued fractions} *)
 
 (* phi = [1; (1)] *)
