@@ -15,8 +15,10 @@
 
 (** Continued fractions.
 
-    The current implementation is limited to continued fractions for
-    nonnegative real numbers.
+    This is one (cute) way of implementing real numbers.
+
+    The current implementation is limited to nonnegative real numbers.
+    (It would be easy to add a sign on top of this code.)
 *)
 
 type t
