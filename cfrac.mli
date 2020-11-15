@@ -59,6 +59,7 @@ val one : t
 val of_int: int -> t
 val of_z  : Z.t -> t
 val of_q  : Q.t -> t
+val of_float: float -> t
 
 val of_seq: Z.t Seq.t -> t
 (** Will raise [Invalid_argument] if the first term is negative,

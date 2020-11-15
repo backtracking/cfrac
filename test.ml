@@ -14,10 +14,9 @@ let rec print_convergents n fmt cv = match cv () with
 let print_convergents ~n fmt cv =
   fprintf fmt "@[<hov 2>%a@]" (print_convergents n) (convergents cv)
 
-
-let display name cf =
+let display ?(n=10) name cf =
   printf "%s = %a@." name print cf;
-  printf "  = %a@." (print_convergents ~n:10) cf;
+  printf "  = %a@." (print_convergents ~n) cf;
   printf "@."
 
 let () = display "0" zero
@@ -32,7 +31,7 @@ let () = assert (nth_convergent 3 pi = Q.of_ints 355 113)
 let cf_42 = of_int 42
 let () = assert (int_part cf_42 = Z.of_int 42)
 
-let () = display "q1"
-           (of_q Q.{ num = Z.of_string "22"; den = Z.of_string "7" })
-let () = display "q2"
-           (of_q Q.{ num = Z.of_string "103993"; den = Z.of_string "33102" })
+let () = display "q1" (of_q (Q.of_string "22/7"))
+let () = display "q2" (of_q (Q.of_string "103993/33102"))
+
+let () = assert (nth_convergent 1 (of_float 0.5) = Q.of_string "1/2")

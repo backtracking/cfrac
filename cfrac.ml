@@ -73,6 +73,10 @@ let of_q Q.{ num; den } =
   let q, r = Z.div_rem num den in
   fun () -> Cons (q, euclid den r)
 
+let of_float x =
+  if x < 0. then invalid_arg "of_float";
+  of_q (Q.of_float x)
+
 let of_seq s =
   let check z = if Z.sign z <= 0 then invalid_arg "of_seq"; z in
   match s () with
