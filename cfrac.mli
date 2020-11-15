@@ -29,7 +29,10 @@ val int_part: t -> Z.t
 (** The integer part of the continued fraction, i.e. the very first term .*)
 
 val convergents: t -> Q.t Seq.t
-(** The successive convergents of the continued fraction. *)
+(** The successive convergents of the continued fraction.
+    Each convergent is in its lowest terms.
+    The very first convergent is the integer part, and thus has
+    denominator 1. *)
 
 val nth_convergent: int -> t -> Q.t
 (** Merely a convenience function built on top of [convergents].
@@ -55,11 +58,11 @@ val set_print_precision: int -> unit
   - Functions such as [of_int], [of_z], etc., raise [Invalid_argument]
     if they are called with a negative argument.
 
-  - Functions such as [of_seq], [of_fun], [of_list], etc., raise [Invalid_argument]
-    when a term is nonpositive (apart from the very first one, which can be zero).
-    But the verification is only performed when the term is accessed,
-    so it could be much later, or even never.
-*)
+  - Functions such as [of_seq], [of_fun], [of_list], etc., raise
+    [Invalid_argument] when a term is nonpositive (apart from the very
+    first one, which can be zero).  But the verification is only
+    performed when the term is accessed, so it could be much later, or
+    even never.  *)
 
 val zero: t
 val one : t
@@ -85,9 +88,9 @@ val of_list: Z.t list -> t
 
 val periodic: Z.t list -> (int -> Z.t list) -> t
 (** [periodic prefix f] builds the continued fraction obtained by appending
-    the list [prefix], [f 0], [f 1], etc.
-    Each list must be nonempty. The first term must be nonnegative, and next terms
-    must be positive. Otherwise, [Invalid_argument] is raised. *)
+    the lists [prefix], [f 0], [f 1], etc.
+    Each list must be nonempty. The first term must be nonnegative, and next
+    terms must be positive. Otherwise, [Invalid_argument] is raised. *)
 
 (** {2 Some continued fractions} *)
 
