@@ -87,12 +87,22 @@ let of_seq s =
 let of_fun f =
   let rec loop i () =
     let z = f i in
-    if Z.sign z <= 0 then invalid_arg "of_fun";
-    Cons (z, loop (i + 1)) in
+    if Z.sign z < 0 then invalid_arg "of_fun";
+    if Z.sign z = 0 then Nil else Cons (z, loop (i + 1)) in
   fun () ->
     let z = f 0 in
     if Z.sign z < 0 then invalid_arg "of_fun";
     Cons (z, loop 1)
+
+let rec seq_of_list l () = match l with
+  | [] -> Nil
+  | z :: _ when Z.sign z <= 0 -> invalid_arg "of_list"
+  | z :: l -> Cons (z, seq_of_list l)
+
+let of_list = function
+  | [] -> invalid_arg "of_list"
+  | z :: _ when Z.sign z < 0 -> invalid_arg "of_list"
+  | z :: l -> fun () -> Cons (z, seq_of_list l)
 
 (** {2 Some continued fractions} *)
 

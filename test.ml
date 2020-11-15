@@ -35,3 +35,22 @@ let () = display "q1" (of_q (Q.of_string "22/7"))
 let () = display "q2" (of_q (Q.of_string "103993/33102"))
 
 let () = assert (nth_convergent 1 (of_float 0.5) = Q.of_string "1/2")
+
+(* Examples from "Continued Fraction Arithmetic" by Bill Gosper
+   See for instance https://perl.plover.com/classes/cftalk/INFO/gosper.txt *)
+
+let () =
+  display "number of inches per meter" (of_q (Q.of_string "10000/254"))
+let cf = of_fun (function
+             | 0 -> Z.of_int 39
+             | 1 -> Z.of_int 2
+             | 2 -> Z.of_int 1
+             | 3 -> Z.of_int 2
+             | 4 -> Z.of_int 2
+             | 5 -> Z.of_int 1
+             | 6 -> Z.of_int 4
+             | _ -> Z.zero)
+let () = display "" cf
+let () = display "" (of_list (List.map Z.of_int [39; 2; 1; 2; 2; 1; 4]))
+
+

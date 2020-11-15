@@ -50,8 +50,16 @@ val set_print_precision: int -> unit
 
 (** {2 Some constructors}
 
-  Note: Functions such as [of_int], [of_z], etc., raise [Invalid_argument]
-  if they are called with a negative argument. *)
+  Notes:
+
+  - Functions such as [of_int], [of_z], etc., raise [Invalid_argument]
+    if they are called with a negative argument.
+
+  - Functions such as [of_seq], [of_fun], [of_list], etc., raise [Invalid_argument]
+    when a term is nonpositive (apart from the very first one, which can be zero).
+    But the verification is only performed when the term is accessed,
+    so it could be much later, or even never.
+*)
 
 val zero: t
 val one : t
@@ -63,16 +71,17 @@ val of_float: float -> t
 
 val of_seq: Z.t Seq.t -> t
 (** Will raise [Invalid_argument] if the first term is negative,
-    or if any of the next terms is nonpositive.
-    Note that such verification is only performed when the term is accessed,
-    so it could be much later, or even never. *)
+    or if any of the next terms is nonpositive. *)
 
 val of_fun: (int -> Z.t) -> t
 (** The continued fraction [f(0); f(1), f(2), ...].
-    Will raise [Invalid_argument] if the first term is negative,
-    or if any of the next terms is nonpositive.
-    Note that such verification is only performed when the term is accessed,
-    so it could be much later, or even never. *)
+    Will raise [Invalid_argument] if any term is negative.
+    The terms will stop at the first i>0 such that f(i)=0, so that it can be
+    used to describe a finite continued fraction. *)
+
+val of_list: Z.t list -> t
+(** Will raise [Invalid_argument] if the first term is negative or if any
+    other term is nonpositive. *)
 
 (** {2 Some continued fractions} *)
 
