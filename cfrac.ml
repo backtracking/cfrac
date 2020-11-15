@@ -166,6 +166,10 @@ let idiv x c = ihomography ~a:0 ~b:1 ~c ~d:0 x
 (* phi = [1; (1)] *)
 let rec phi () = Cons (Z.one, phi)
 
+(* sqrt(2) = [1; (2)] *)
+let rec constant z () = Cons (z, constant z)
+let sqrt2 () = Cons (Z.one, constant (Z.of_int 2))
+
 let pi =
   let rec cf = function
     | [] -> failwith "precision of pi exceeded"

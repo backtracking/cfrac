@@ -119,3 +119,7 @@ val pi: t
     Fails if we try to access terms beyond. *)
 
 val e: t
+(** Euler's number. *)
+
+val sqrt2: t
+(** Square root of 2. *)

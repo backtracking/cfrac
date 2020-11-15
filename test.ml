@@ -51,6 +51,8 @@ let () =
   display "13/11 * 11" (imul 11 x);
   display "13/11 / 13" (idiv x 13)
 
+let () = display "sqrt(2)" sqrt2
+
 (* Examples from "Continued Fraction Arithmetic" by Bill Gosper
    See for instance https://perl.plover.com/classes/cftalk/INFO/gosper.txt *)
 

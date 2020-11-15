@@ -4,7 +4,7 @@
 * to_float
 * allow negative a0 ?
 * best rational approximation
-* arithmetic operations (Gosper)
+* bihomographic function
 
 # Sources
 
