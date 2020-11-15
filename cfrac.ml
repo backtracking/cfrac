@@ -126,7 +126,7 @@ let periodic prefix f = match prefix with
 *)
 
 (* (a+bx)/(c+dx) *)
-let homography ~a ~b ~c ~d x =
+let homography ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero) x =
   let debug = false in
   let rec next a b c d x () =
     if debug then
@@ -152,14 +152,17 @@ let homography ~a ~b ~c ~d x =
       in
   next a b c d x
 
-let ihomography ~a ~b ~c ~d =
+let ihomography ?(a=0) ?(b=0) ?(c=0) ?(d=0) =
   homography ~a:(Z.of_int a) ~b:(Z.of_int b) ~c:(Z.of_int c) ~d:(Z.of_int d)
 
-let inv = ihomography ~a:1 ~b:0 ~c:0 ~d:1
-let zmul b = homography ~a:Z.zero ~b ~c:Z.one ~d:Z.zero
-let imul b = ihomography ~a:0 ~b ~c:1 ~d:0
-let zdiv x c = homography ~a:Z.zero ~b:Z.one ~c ~d:Z.zero x
-let idiv x c = ihomography ~a:0 ~b:1 ~c ~d:0 x
+let inv x = ihomography ~a:1 ~d:1 x
+let zmul b x = homography ~b ~c:Z.one x
+let imul b x = ihomography ~b ~c:1 x
+let zdiv x c = homography ~b:Z.one ~c x
+let idiv x c = ihomography ~b:1 ~c x
+
+(* let bihomography ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero) ?(e=Z.zero) ?(f=Z.zero) ?(g=Z.zero) ?(h=Z.zero) x y =
+ *   assert false (\*TODO*\) *)
 
 (** {2 Some continued fractions} *)
 

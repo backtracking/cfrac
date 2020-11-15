@@ -96,10 +96,11 @@ val periodic: Z.t list -> (int -> Z.t list) -> t
 
 (** {2 Homographic functions (Bill Gosper, 1972)} *)
 
-val homography: a:Z.t -> b:Z.t -> c:Z.t -> d:Z.t -> t -> t
-(** [homography a b c d x] returns (a+bx)/(c+dx). *)
+val homography: ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t -> t -> t
+(** [homography a b c d x] returns (a+bx)/(c+dx).
+    Values of a, b, c,d default to 0. *)
 
-val ihomography: a:int -> b:int -> c:int -> d:int -> t -> t
+val ihomography: ?a:int -> ?b:int -> ?c:int -> ?d:int -> t -> t
 
 val inv: t -> t
 
@@ -108,6 +109,14 @@ val imul: int -> t -> t
 
 val zdiv: t -> Z.t -> t
 val idiv: t -> int -> t
+
+(*
+val bihomography:
+  ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t ->
+  ?e:Z.t -> ?f:Z.t -> ?g:Z.t -> ?h:Z.t ->
+  t -> t -> t
+ *)
+(** [bihomography a b c d e f g h x y] returns (a+bx+cy+dxy)/(e+fx+gy+hxy). *)
 
 (** {2 Some continued fractions} *)
 

@@ -47,7 +47,7 @@ let () =
 let () =
   let x = of_q (Q.of_string "13/11") in
   display "13/11" x;
-  display "x+1/2" (ihomography ~a:1 ~b:2 ~c:2 ~d:0 x);
+  display "x+1/2" (ihomography ~a:1 ~b:2 ~c:2 x);
   display "13/11 * 11" (imul 11 x);
   display "13/11 / 13" (idiv x 13)
 
