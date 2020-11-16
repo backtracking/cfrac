@@ -84,6 +84,9 @@ let of_q Q.{ num; den } =
   let q, r = Z.div_rem num den in
   fun () -> Cons (q, euclid den r)
 
+let of_qstring s =
+  of_q (Q.of_string s)
+
 let of_float x =
   if x < 0. then invalid_arg "of_float";
   of_q (Q.of_float x)
@@ -275,3 +278,28 @@ let pi =
 
 (* e = [2; 1,2,1, 1,4,1, 1,6,1, 1,8,1, ...] = [2; (1, 2n+2, 1)] *)
 let e = periodic [Z.of_int 2] (fun n -> [Z.one; Z.of_int (2*n+2); Z.one])
+
+(** {Semi-computable functions} *)
+
+type 'a semi = Sure of 'a | CantDecide
+
+let default_fuel = 20
+
+let compare ?(fuel=default_fuel) x y =
+  let rec cmp fuel even x y =
+    if fuel = 0 then CantDecide else
+    match x(), y () with
+    | Nil, Nil -> Sure 0
+    | Nil, Cons _ -> Sure (if even then 1 else -1)
+    | Cons _, Nil -> Sure (if even then -1 else 1)
+    | Cons (zx, x), Cons (zy, y) ->
+        let c = Z.compare zx zy in
+        if c <> 0 then Sure (if if even then c < 0 else c > 0 then -1 else 1)
+        else cmp (fuel - 1) (not even) x y in
+  cmp fuel true x y
+
+let is_rational ?(fuel=default_fuel) x =
+  let rec lookup fuel x =
+    if fuel = 0 then CantDecide else
+    match x () with Nil -> Sure true | Cons (_, x) -> lookup (fuel - 1) x in
+  lookup fuel x

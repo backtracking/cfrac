@@ -85,6 +85,9 @@ val of_z  : Z.t -> t
 val of_q  : Q.t -> t
 val of_float: float -> t
 
+val of_qstring: string -> t
+(** Shortcut for [of_q (Q.of_string s)]. *)
+
 val of_seq: Z.t Seq.t -> t
 (** Will raise [Invalid_argument] if the first term is negative,
     or if any of the next terms is nonpositive. *)
@@ -158,3 +161,28 @@ val e: t
 
 val sqrt2: t
 (** Square root of 2. *)
+
+(** {2 Semi-computable functions}
+
+    When implementing real numbers in a computer, there are several operations we
+    cannot implement, such as comparing two numbers, etc. This could run forever.
+    Yet, there are cases where the computation could terminate. Comparison, for
+    instance, will terminate if the two arguments happen to be different.
+
+    Below are some functions in this category. Their running time is controlled with
+    a [fuel] argument, which is decreased at each step in the internal computation.
+    If ever the fuel reaches 0, the computation stops, with answer [CantDecide].
+    If ever the answer can be computed before we run out of fuel, it is returned
+    as [Sure r] where [r] is the answer.
+
+    The default value for the fuel is 20. *)
+
+type 'a semi = Sure of 'a | CantDecide
+
+val compare: ?fuel:int -> t -> t -> int semi
+(** [compare x y] returns either [-1] (which means [x < y]), [0] (which means [x = y]),
+    or [1] (which means [x > y]). The answer [0] is only possible when both [x] and
+    [y] are rational numbers (and that we can figure this out before we run out of
+    fuel). *)
+
+val is_rational: ?fuel:int -> t -> bool semi

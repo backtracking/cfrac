@@ -31,11 +31,11 @@ let () = assert (nth_convergent 3 pi = Q.of_ints 355 113)
 let cf_42 = of_int 42
 let () = assert (int_part cf_42 = Z.of_int 42)
 
-let () = display "22/7" (of_q (Q.of_string "22/7"))
-let () = display "355/113" (of_q (Q.of_string "355/113"))
+let () = display "22/7" (of_qstring "22/7")
+let () = display "355/113" (of_qstring "355/113")
 let () = display "355/113 alt" (of_ilist [3; 7; 15; 1])
-let () = display "103993/33102" (of_q (Q.of_string "103993/33102"))
-let () = display "1+22/7" (iadd 1 (of_q (Q.of_string "22/7")))
+let () = display "103993/33102" (of_qstring "103993/33102")
+let () = display "1+22/7" (iadd 1 (of_qstring "22/7"))
 
 let () = assert (nth_convergent 1 (of_float 0.5) = Q.of_string "1/2")
 
@@ -62,12 +62,22 @@ let () =
     Q.pp_print (best_approx (Z.of_int 1_000_000) pi)
 
 let () = display "1*1" (mul one one)
-
 let () = let two = mul sqrt2 sqrt2 in assert Z.(int_part two = of_int 2)
 (* CAVEAT: do not try to go any further; it won't terminate *)
 
+let () = display "355/113 * 113/355" (mul (of_qstring "355/113") (of_qstring "113/355"))
+
 let () = display "phi^2" (mul phi phi)
 let () = display "phi+1" (iadd 1 phi)
+
+let () = assert (compare (of_qstring "1/7") (of_qstring "1/5") = Sure (-1))
+let () = assert (compare (of_qstring "1/5") (of_qstring "1/5") = Sure 0)
+
+let () = assert (compare sqrt2 (of_qstring "15/10") = Sure (-1))
+let () = assert (compare (of_qstring "15/10") sqrt2 = Sure 1)
+let () = assert (compare sqrt2 (of_qstring "14/10") = Sure 1)
+let () = assert (compare (of_qstring "14/10") sqrt2 = Sure (-1))
+let () = assert (compare phi phi = CantDecide)
 
 (* Examples from "Continued Fraction Arithmetic" by Bill Gosper
    See for instance https://perl.plover.com/classes/cftalk/INFO/gosper.txt *)

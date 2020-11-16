@@ -4,6 +4,7 @@
 * to_float
 * improve best rational approximation
 * get rid of float in function homography
+* other ``semi-computable'' functions
 
 # Sources
 
