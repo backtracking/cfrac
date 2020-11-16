@@ -2,9 +2,8 @@
 # TODO
 
 * to_float
-* allow negative a0 ?
-* best rational approximation
-* bihomographic function
+* improve best rational approximation
+* get rid of float in function homography
 
 # Sources
 

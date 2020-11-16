@@ -16,6 +16,7 @@
 open Seq
 
 type t = Z.t Seq.t
+(* this is nonempty sequence *)
 
 let terms cf = cf
 
@@ -37,6 +38,16 @@ let nth_convergent n cf =
     | Cons (q, _) when n = 0 -> q
     | Cons (_, cv) -> nth (n - 1) cv in
   nth n (convergents cf)
+
+let best_approx d x =
+  if Z.sign d <= 0 then invalid_arg "best_approx";
+  let rec lookup q cv = match cv () with
+    | Nil -> q
+    | Cons _ when q.Q.den >= d -> q
+    | Cons (q, cv) -> lookup q cv in
+  match convergents x () with
+  | Nil -> assert false
+  | Cons (q, cv) -> lookup q cv
 
 let print_precision = ref 5
 let set_print_precision = (:=) print_precision
@@ -66,7 +77,7 @@ let of_z z =
 
 let of_q Q.{ num; den } =
   assert (Z.sign den > 0);
-  let rec euclid p q =
+  let rec euclid p q = (* invariant 0 <= q < p *)
     if q = Z.zero then empty
     else let a, r = Z.div_rem p q in
          fun () -> Cons (a, euclid q r) in
@@ -104,6 +115,8 @@ let of_list = function
   | z :: _ when Z.sign z < 0 -> invalid_arg "of_list"
   | z :: l -> fun () -> Cons (z, seq_of_list l)
 
+let of_ilist l = of_list (List.map Z.of_int l)
+
 let rec list_concat l1 s2 () = match l1 with
   | [] -> s2 ()
   | z ::  _ when Z.sign z <= 0 -> invalid_arg "periodic"
@@ -125,8 +138,16 @@ let periodic prefix f = match prefix with
   - https://github.com/mjdominus/cf/
 *)
 
-(* (a+bx)/(c+dx) *)
+let bound n d =
+  if d = Z.zero then infinity else Z.to_float n /. Z.to_float d
+
+(*
+    a + bx
+   --------
+    c + dx
+*)
 let homography ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero) x =
+  if c = Z.zero && d = Z.zero then invalid_arg "homography";
   let debug = false in
   let rec next a b c d x () =
     if debug then
@@ -136,8 +157,8 @@ let homography ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero) x =
       Nil
     else
       (* use float to handle infinity *)
-      let b1 = floor (Z.to_float a /. Z.to_float c) in
-      let b2 = floor (Z.to_float b /. Z.to_float d) in
+      let b1 = floor (bound a c) in
+      let b2 = floor (bound b d) in
       if b1 = b2 then begin (* egest *)
         let q = Z.fdiv a c in
         if debug then Format.eprintf "egest %a@." Z.pp_print q;
@@ -155,14 +176,81 @@ let homography ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero) x =
 let ihomography ?(a=0) ?(b=0) ?(c=0) ?(d=0) =
   homography ~a:(Z.of_int a) ~b:(Z.of_int b) ~c:(Z.of_int c) ~d:(Z.of_int d)
 
-let inv x = ihomography ~a:1 ~d:1 x
+let zadd a x = homography ~a ~b:Z.one ~c:Z.one x
+let iadd a x = ihomography ~a ~b:1 ~c:1 x
 let zmul b x = homography ~b ~c:Z.one x
 let imul b x = ihomography ~b ~c:1 x
 let zdiv x c = homography ~b:Z.one ~c x
 let idiv x c = ihomography ~b:1 ~c x
+let inv x = ihomography ~a:1 ~d:1 x
 
-(* let bihomography ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero) ?(e=Z.zero) ?(f=Z.zero) ?(g=Z.zero) ?(h=Z.zero) x y =
- *   assert false (\*TODO*\) *)
+let _idiff p q =
+  if p = infinity || q = infinity then infinity else abs_float (p -. q)
+
+(*
+    a + bx + cy + dxy
+   -------------------
+    e + fx + gy + hxy
+*)
+let bihomography
+  ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero)
+  ?(e=Z.zero) ?(f=Z.zero) ?(g=Z.zero) ?(h=Z.zero) x y =
+  if e = Z.zero && f = Z.zero && g = Z.zero && h = Z.zero then
+    invalid_arg "bihomography";
+  let debug = false in
+  let rec next a b c d e f g h x y () =
+    if debug then
+      Format.eprintf "state is %a %a %a %a / %a %a %a %a@."
+        Z.pp_print a Z.pp_print b Z.pp_print c Z.pp_print d
+        Z.pp_print e Z.pp_print f Z.pp_print g Z.pp_print h;
+    if e = Z.zero && f = Z.zero && g = Z.zero && h = Z.zero then
+      Nil
+    else
+      let b11 = bound a e and b01 = bound c g
+      and b10 = bound b f and b00 = bound d h in
+      let i11 = floor b11 and i01 = floor b01
+      and i10 = floor b10 and i00 = floor b00 in
+      if i11 = i01 && i01 = i10 && i10 = i00 then begin
+        (* egest *)
+        let q = Z.fdiv a e in
+        if debug then Format.eprintf "egest %a@." Z.pp_print q;
+        Cons (q, next e         f         g         h
+                      Z.(a-q*e) Z.(b-q*f) Z.(c-q*g) Z.(d-q*h) x y)
+      end else
+        if Z.(f = zero && h = zero ||
+              e = zero && g = zero ||
+              abs (b*e*g - a*f*g) > abs (c*e*f - a*f*g)) then
+          ingest_x a b c d e f g h x y
+        else
+          ingest_y a b c d e f g h x y
+    and ingest_x a b c d e f g h x y = match x () with
+      | Nil ->
+          next b b d d
+               f f h h x y ()
+      | Cons (p, x) ->
+          if debug then Format.eprintf "ingest x => %a@." Z.pp_print p;
+          next b Z.(a+b*p) d Z.(c+d*p)
+               f Z.(e+f*p) h Z.(g+h*p) x y ()
+    and ingest_y a b c d e f g h x y = match y () with
+      | Nil ->
+          next c d c d
+               g h g h x y ()
+      | Cons (q, y) ->
+          if debug then Format.eprintf "ingest y => %a@." Z.pp_print q;
+          next c d Z.(a+c*q) Z.(b+d*q)
+               g h Z.(e+g*q) Z.(f+h*q) x y ()
+  in
+  next a b c d e f g h x y
+
+let ibihomography ?(a=0) ?(b=0) ?(c=0) ?(d=0) ?(e=0) ?(f=0) ?(g=0) ?(h=0) =
+  bihomography
+    ~a:(Z.of_int a) ~b:(Z.of_int b) ~c:(Z.of_int c) ~d:(Z.of_int d)
+    ~e:(Z.of_int e) ~f:(Z.of_int f) ~g:(Z.of_int g) ~h:(Z.of_int h)
+
+let add x y = ibihomography ~b:1 ~c:1 ~e:1 x y
+let sub x y = ibihomography ~b:1 ~c:(-1) ~e:1 x y
+let mul x y = ibihomography ~d:1 ~e:1 x y
+let div x y = ibihomography ~b:1 ~g:1 x y
 
 (** {2 Some continued fractions} *)
 

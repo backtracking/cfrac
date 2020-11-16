@@ -43,6 +43,12 @@ val nth_convergent: int -> t -> Q.t
     Note: [nth_convergent 0] returns the integer part of the
     continued fraction, and thus is identical to [int_part]. *)
 
+val best_approx: Z.t -> t -> Q.t
+(** [best_approx d x] returns the best rational approximation of [x] with a
+    denominator up to [d], for a given [d>0].
+    Said otherwise, if [best_approx] returns p/q, then we have
+    |qx-p| < |bx-a| for any other approximation a/b of x with b <= d. *)
+
 val print: Format.formatter -> t -> unit
 (** Print a continued fraction as "[a0; a1, a2, ...]" up to some term given by
     some internal precision (5 by default, but this can be changed using
@@ -59,6 +65,11 @@ val set_print_precision: int -> unit
 
   - Functions such as [of_int], [of_z], etc., raise [Invalid_argument]
     if they are called with a negative argument.
+
+  - Function [of_q] returns a finite sequence --- rational numbers are exactly
+    the real numbers with finite continued fractions --- whose last term is not 1.
+    For instance, the continued fraction of 355/113 will be [3; 7, 16] and
+    not [3; 7, 15, 1], even if the latter could be considered legitimate as well.
 
   - Functions such as [of_seq], [of_fun], [of_list], etc., raise
     [Invalid_argument] when a term is nonpositive (apart from the very
@@ -88,6 +99,8 @@ val of_list: Z.t list -> t
 (** Will raise [Invalid_argument] if the first term is negative or if any
     other term is nonpositive. *)
 
+val of_ilist: int list -> t
+
 val periodic: Z.t list -> (int -> Z.t list) -> t
 (** [periodic prefix f] builds the continued fraction obtained by appending
     the lists [prefix], [f 0], [f 1], etc.
@@ -98,11 +111,13 @@ val periodic: Z.t list -> (int -> Z.t list) -> t
 
 val homography: ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t -> t -> t
 (** [homography a b c d x] returns (a+bx)/(c+dx).
-    Values of a, b, c,d default to 0. *)
+    Values of a, b, c,d default to 0.
+    Will raise [Invalid_argument] if both [c] and [d] are 0. *)
 
 val ihomography: ?a:int -> ?b:int -> ?c:int -> ?d:int -> t -> t
 
-val inv: t -> t
+val zadd: Z.t -> t -> t
+val iadd: int -> t -> t
 
 val zmul: Z.t -> t -> t
 val imul: int -> t -> t
@@ -110,13 +125,24 @@ val imul: int -> t -> t
 val zdiv: t -> Z.t -> t
 val idiv: t -> int -> t
 
-(*
+val inv: t -> t
+
 val bihomography:
   ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t ->
   ?e:Z.t -> ?f:Z.t -> ?g:Z.t -> ?h:Z.t ->
   t -> t -> t
- *)
-(** [bihomography a b c d e f g h x y] returns (a+bx+cy+dxy)/(e+fx+gy+hxy). *)
+(** [bihomography a b c d e f g h x y] returns (a+bx+cy+dxy)/(e+fx+gy+hxy).
+    Will raise [Invalid_argument] if [e], [f], [g], and [h] are all 0. *)
+
+val ibihomography:
+  ?a:int -> ?b:int -> ?c:int -> ?d:int ->
+  ?e:int -> ?f:int -> ?g:int -> ?h:int ->
+  t -> t -> t
+
+val add: t -> t -> t
+val sub: t -> t -> t
+val mul: t -> t -> t
+val div: t -> t -> t
 
 (** {2 Some continued fractions} *)
 

@@ -31,8 +31,11 @@ let () = assert (nth_convergent 3 pi = Q.of_ints 355 113)
 let cf_42 = of_int 42
 let () = assert (int_part cf_42 = Z.of_int 42)
 
-let () = display "q1" (of_q (Q.of_string "22/7"))
-let () = display "q2" (of_q (Q.of_string "103993/33102"))
+let () = display "22/7" (of_q (Q.of_string "22/7"))
+let () = display "355/113" (of_q (Q.of_string "355/113"))
+let () = display "355/113 alt" (of_ilist [3; 7; 15; 1])
+let () = display "103993/33102" (of_q (Q.of_string "103993/33102"))
+let () = display "1+22/7" (iadd 1 (of_q (Q.of_string "22/7")))
 
 let () = assert (nth_convergent 1 (of_float 0.5) = Q.of_string "1/2")
 
@@ -52,6 +55,19 @@ let () =
   display "13/11 / 13" (idiv x 13)
 
 let () = display "sqrt(2)" sqrt2
+let () = display "1/sqrt(2)" (inv sqrt2)
+
+let () =
+  printf "approx pi 10-6 = %a@.@."
+    Q.pp_print (best_approx (Z.of_int 1_000_000) pi)
+
+let () = display "1*1" (mul one one)
+
+let () = let two = mul sqrt2 sqrt2 in assert Z.(int_part two = of_int 2)
+(* CAVEAT: do not try to go any further; it won't terminate *)
+
+let () = display "phi^2" (mul phi phi)
+let () = display "phi+1" (iadd 1 phi)
 
 (* Examples from "Continued Fraction Arithmetic" by Bill Gosper
    See for instance https://perl.plover.com/classes/cftalk/INFO/gosper.txt *)
@@ -68,7 +84,7 @@ let cf = of_fun (function
              | 6 -> Z.of_int 4
              | _ -> Z.zero)
 let () = display "" cf
-let () = display "" (of_list (List.map Z.of_int [39; 2; 1; 2; 2; 1; 4]))
+let () = display "" (of_ilist [39; 2; 1; 2; 2; 1; 4])
 
 let () =
   let cf = ihomography ~a:1 ~b:1 ~c:(-1) ~d:1 e in
