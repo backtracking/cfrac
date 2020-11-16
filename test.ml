@@ -62,8 +62,6 @@ let () =
     Q.pp_print (best_approx (Z.of_int 1_000_000) pi)
 
 let () = display "1*1" (mul one one)
-let () = let two = mul sqrt2 sqrt2 in assert Z.(int_part two = of_int 2)
-(* CAVEAT: do not try to go any further; it won't terminate *)
 
 let () = display "355/113 * 113/355" (mul (of_qstring "355/113") (of_qstring "113/355"))
 

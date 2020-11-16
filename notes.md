@@ -2,8 +2,9 @@
 # TODO
 
 * to_float
-* improve best rational approximation
-* get rid of float in function homography
+* improve best_approx
+* solutions of quadratic equations
+* Pell-Fermat
 * other ``semi-computable'' functions
 
 # Sources

@@ -141,10 +141,16 @@ let periodic prefix f = match prefix with
   - https://github.com/mjdominus/cf/
 *)
 
-let bound n d =
-  if d = Z.zero then infinity else Z.to_float n /. Z.to_float d
+type bound = Inf | Fin of Z.t
 
-(*
+let bound n d = if d = Z.zero then Inf else Fin (Z.fdiv n d)
+
+let _print_bound fmt = function
+  | Inf   -> Format.fprintf fmt "inf"
+  | Fin z -> Z.pp_print fmt z
+
+(* Given x, we wish to compute the homographic function
+
     a + bx
    --------
     c + dx
@@ -158,22 +164,16 @@ let homography ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero) x =
         Z.pp_print a Z.pp_print b Z.pp_print c Z.pp_print d;
     if c = Z.zero && d = Z.zero then
       Nil
-    else
-      (* use float to handle infinity *)
-      let b1 = floor (bound a c) in
-      let b2 = floor (bound b d) in
-      if b1 = b2 then begin (* egest *)
-        let q = Z.fdiv a c in
+    else match bound a c, bound b d with
+    | Fin q, Fin q' when q = q' -> (* egest *)
         if debug then Format.eprintf "egest %a@." Z.pp_print q;
         Cons (q, next c d Z.(a - q * c) Z.(b - q * d) x)
-      end else (* ingest *)
-        match x () with
+    | _ -> (match x () with (* ingest *)
         | Nil ->
             next b b d d x ()
         | Cons (p, x) ->
             if debug then Format.eprintf "ingest %a@." Z.pp_print p;
-            next b Z.(a + p * b) d Z.(c + p * d) x ()
-      in
+            next b Z.(a + p * b) d Z.(c + p * d) x ()) in
   next a b c d x
 
 let ihomography ?(a=0) ?(b=0) ?(c=0) ?(d=0) =
@@ -190,10 +190,27 @@ let inv x = ihomography ~a:1 ~d:1 x
 let _idiff p q =
   if p = infinity || q = infinity then infinity else abs_float (p -. q)
 
-(*
+(* Given x and y, we wish to compute
+
     a + bx + cy + dxy
    -------------------
     e + fx + gy + hxy
+
+  that Gosper calls a ``bihomographic function''.
+
+     <------x emits p---------
+
+    ...   a+bp      b     a    |
+           e+fp      f     e   |
+                               |
+          c+dp      d     c    |
+           g+hp       h     g  |
+                               |
+                  b+dq   a+cq  |  y emits q
+                   f+hq   e+gq |
+                               |
+                      ...      V
+
 *)
 let bihomography
   ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero)
@@ -208,18 +225,13 @@ let bihomography
         Z.pp_print e Z.pp_print f Z.pp_print g Z.pp_print h;
     if e = Z.zero && f = Z.zero && g = Z.zero && h = Z.zero then
       Nil
-    else
-      let b11 = bound a e and b01 = bound c g
-      and b10 = bound b f and b00 = bound d h in
-      let i11 = floor b11 and i01 = floor b01
-      and i10 = floor b10 and i00 = floor b00 in
-      if i11 = i01 && i01 = i10 && i10 = i00 then begin
+    else match bound a e, bound c g, bound b f, bound d h with
+    | Fin q, Fin q2, Fin q3, Fin q4 when q = q2 && q2 = q3 && q3 = q4 ->
         (* egest *)
-        let q = Z.fdiv a e in
         if debug then Format.eprintf "egest %a@." Z.pp_print q;
         Cons (q, next e         f         g         h
                       Z.(a-q*e) Z.(b-q*f) Z.(c-q*g) Z.(d-q*h) x y)
-      end else
+    | _ ->
         if Z.(f = zero && h = zero ||
               e = zero && g = zero ||
               abs (b*e*g - a*f*g) > abs (c*e*f - a*f*g)) then
@@ -250,10 +262,10 @@ let ibihomography ?(a=0) ?(b=0) ?(c=0) ?(d=0) ?(e=0) ?(f=0) ?(g=0) ?(h=0) =
     ~a:(Z.of_int a) ~b:(Z.of_int b) ~c:(Z.of_int c) ~d:(Z.of_int d)
     ~e:(Z.of_int e) ~f:(Z.of_int f) ~g:(Z.of_int g) ~h:(Z.of_int h)
 
-let add x y = ibihomography ~b:1 ~c:1 ~e:1 x y
-let sub x y = ibihomography ~b:1 ~c:(-1) ~e:1 x y
-let mul x y = ibihomography ~d:1 ~e:1 x y
-let div x y = ibihomography ~b:1 ~g:1 x y
+let add x y = ibihomography ~b:1 ~c:1         ~e:1          x y
+let sub x y = ibihomography ~b:1 ~c:(-1)      ~e:1          x y
+let mul x y = ibihomography              ~d:1 ~e:1          x y
+let div x y = ibihomography ~b:1                       ~g:1 x y
 
 (** {2 Some continued fractions} *)
 
