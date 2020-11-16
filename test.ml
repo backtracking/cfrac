@@ -23,10 +23,18 @@ let () = display "0" zero
 let () = display "1" one
 
 let () = display "pi" pi
+let () = printf "pi ~ %.15f@.@." (to_float pi)
+let () =
+  printf "approx pi 10-6 = %a@.@."
+    Q.pp_print (best_approx (Z.of_int 1_000_000) pi)
+
 let () = display "phi" phi
+let () = printf "phi = %.15f (%.15f)@.@." (to_float phi) ((1. +. sqrt 5.) /. 2.)
 let () = assert (nth_convergent 0 pi = Q.of_int 3)
 let () = assert (nth_convergent 1 pi = Q.of_ints 22 7)
 let () = assert (nth_convergent 3 pi = Q.of_ints 355 113)
+let () = display "phi^2" (mul phi phi)
+let () = display "phi+1" (iadd 1 phi)
 
 let cf_42 = of_int 42
 let () = assert (int_part cf_42 = Z.of_int 42)
@@ -57,19 +65,14 @@ let () =
 let () = display "sqrt(2)" sqrt2
 let () = display "1/sqrt(2)" (inv sqrt2)
 let () = display "sqrt(2)/2" (idiv sqrt2 2)
+let () = printf "sqrt(2) = %.15f (%.15f)@.@." (to_float sqrt2) (sqrt 2.)
 
 let () = display "sqrt(3)" sqrt3
 
-let () =
-  printf "approx pi 10-6 = %a@.@."
-    Q.pp_print (best_approx (Z.of_int 1_000_000) pi)
 
 let () = display "1*1" (mul one one)
 
 let () = display "355/113 * 113/355" (mul (of_qstring "355/113") (of_qstring "113/355"))
-
-let () = display "phi^2" (mul phi phi)
-let () = display "phi+1" (iadd 1 phi)
 
 let () = assert (compare (of_qstring "1/7") (of_qstring "1/5") = Sure (-1))
 let () = assert (compare (of_qstring "1/5") (of_qstring "1/5") = Sure 0)
@@ -79,6 +82,12 @@ let () = assert (compare (of_qstring "15/10") sqrt2 = Sure 1)
 let () = assert (compare sqrt2 (of_qstring "14/10") = Sure 1)
 let () = assert (compare (of_qstring "14/10") sqrt2 = Sure (-1))
 let () = assert (compare phi phi = CantDecide)
+
+let () = assert (to_float (of_qstring "1/2") = 0.5)
+let () = printf "0.01 ~ %.15f@.@." (to_float (of_qstring "1/100"))
+let () = let av = 6.02214076e+23 in assert (to_float (of_float av) = av)
+let () = assert (to_float (of_float 1e-200) = 1e-200)
+let () = assert (to_float (of_float 1e+300) = 1e+300)
 
 (* Examples from "Continued Fraction Arithmetic" by Bill Gosper
    See for instance https://perl.plover.com/classes/cftalk/INFO/gosper.txt *)

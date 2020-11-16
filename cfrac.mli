@@ -49,6 +49,8 @@ val best_approx: Z.t -> t -> Q.t
     Said otherwise, if [best_approx] returns p/q, then we have
     |qx-p| < |bx-a| for any other approximation a/b of x with b <= d. *)
 
+val to_float: t -> float
+
 val print: Format.formatter -> t -> unit
 (** Print a continued fraction as "[a0; a1, a2, ...]" up to some term given by
     some internal precision (5 by default, but this can be changed using

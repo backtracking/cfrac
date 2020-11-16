@@ -49,6 +49,45 @@ let best_approx d x =
   | Nil -> assert false
   | Cons (q, cv) -> lookup q cv
 
+(* Conversion to a float. (Algorithm by Guillaume Melquiond)
+   1. find a lower bound M of x
+   2. compute a convergent q of x with a denominator at least ceil(2^60/M)
+      round this to the nearest float f (using Q.to_float)
+   3. if the convergent q is of odd order and q >= f or
+      if the convergent q is of even order and q <= f, then return f
+   4. otherwise, repeat with the new convergent *)
+let to_float x =
+  match x () with
+  | Nil -> assert false
+  | Cons (a0, cf) ->
+      let lookup d =
+        let rec conv odd hn_2 hn_1 kn_2 kn_1 cf = match cf () with
+          | Nil ->
+              (* we have an exact rational value *)
+              Q.(to_float { num = hn_1; den = kn_1 })
+          | Cons (an, cf) ->
+              (* otherwise, compute the next convergent (which is odd iff odd) *)
+              let hn = Z.(an * hn_1 + hn_2) in
+              let kn = Z.(an * kn_1 + kn_2) in
+              if kn >= d then
+                let q = Q.{ num = hn; den = kn } in
+                let f = Q.to_float q in
+                if if odd then Q.(q >= of_float f) else Q.(q <= of_float f) then
+                  f
+                else
+                  conv (not odd) hn_1 hn kn_1 kn cf
+              else
+                conv (not odd) hn_1 hn kn_1 kn cf in
+        conv true Z.one a0 Z.zero Z.one cf in
+      let t60 = Z.(pow (of_int 2) 60) in
+      if a0 = Z.zero then
+        match cf () with
+        | Nil -> 0.
+        | Cons (a1, _) -> assert (Z.sign a1 > 0);
+                          lookup (Z.mul t60 a1)
+      else
+        lookup (Z.cdiv t60 a0)
+
 let print_precision = ref 5
 let set_print_precision = (:=) print_precision
 

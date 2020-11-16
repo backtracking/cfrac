@@ -1,8 +1,7 @@
 
 # TODO
 
-* to_float
-* improve best_approx
+* improve best_approx?
 * solutions of quadratic equations
   i.e. (a + b sqrt(c)) / d
   i.e. periodic CF
