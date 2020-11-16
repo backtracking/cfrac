@@ -269,12 +269,17 @@ let div x y = ibihomography ~b:1                       ~g:1 x y
 
 (** {2 Some continued fractions} *)
 
+let rec constant z () = Cons (z, constant z)
+
 (* phi = [1; (1)] *)
-let rec phi () = Cons (Z.one, phi)
+let phi = constant Z.one
 
 (* sqrt(2) = [1; (2)] *)
-let rec constant z () = Cons (z, constant z)
 let sqrt2 () = Cons (Z.one, constant (Z.of_int 2))
+
+(* sqrt(3) = [1; (1, 2)] *)
+let sqrt3 =
+  let l12 = [Z.one; Z.of_int 2] in periodic [Z.one] (fun _ -> l12)
 
 let pi =
   let rec cf = function
@@ -309,6 +314,11 @@ let compare ?(fuel=default_fuel) x y =
         if c <> 0 then Sure (if if even then c < 0 else c > 0 then -1 else 1)
         else cmp (fuel - 1) (not even) x y in
   cmp fuel true x y
+
+let partial f = function CantDecide -> CantDecide | Sure x -> Sure (f x)
+
+let equal ?(fuel=default_fuel) x y =
+  partial ((=) 0) (compare ~fuel x y)
 
 let is_rational ?(fuel=default_fuel) x =
   let rec lookup fuel x =

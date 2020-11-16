@@ -56,6 +56,9 @@ let () =
 
 let () = display "sqrt(2)" sqrt2
 let () = display "1/sqrt(2)" (inv sqrt2)
+let () = display "sqrt(2)/2" (idiv sqrt2 2)
+
+let () = display "sqrt(3)" sqrt3
 
 let () =
   printf "approx pi 10-6 = %a@.@."

@@ -57,7 +57,8 @@ val print: Format.formatter -> t -> unit
     Otherwise, the list ends with the last term. *)
 
 val set_print_precision: int -> unit
-(** Set the precision used by [print]. *)
+(** Set the precision used by [print].
+    The default precision is 5. *)
 
 (** {2 Some constructors}
 
@@ -162,6 +163,9 @@ val e: t
 val sqrt2: t
 (** Square root of 2. *)
 
+val sqrt3: t
+(** Square root of 3. *)
+
 (** {2 Semi-computable functions}
 
     When implementing real numbers in a computer, there are several operations we
@@ -175,7 +179,12 @@ val sqrt2: t
     If ever the answer can be computed before we run out of fuel, it is returned
     as [Sure r] where [r] is the answer.
 
-    The default value for the fuel is 20. *)
+    The default value for the fuel is 20.
+
+    CAVEAT: It is already possible to obtain non-terminating computations using
+    the functions above. For instance, if we build [mul sqrt2 sqrt2], any attempt
+    at observing it, even with [int_part], will run forever.
+*)
 
 type 'a semi = Sure of 'a | CantDecide
 
@@ -184,5 +193,7 @@ val compare: ?fuel:int -> t -> t -> int semi
     or [1] (which means [x > y]). The answer [0] is only possible when both [x] and
     [y] are rational numbers (and that we can figure this out before we run out of
     fuel). *)
+
+val equal: ?fuel:int -> t -> t -> bool semi
 
 val is_rational: ?fuel:int -> t -> bool semi
