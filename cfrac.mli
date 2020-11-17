@@ -15,10 +15,24 @@
 
 (** Continued fractions.
 
-    This is one (cute) way of implementing real numbers.
+    This is one (cute) way of implementing real numbers in a computer.
 
     The current implementation is limited to nonnegative real numbers.
-    (It would be easy to add a sign on top of this code.)
+    It provides simple continued fractions, which means
+    it represents a real number x >= 0 as
+
+                   1
+      a0 + --------------------
+                     1
+           a1 + ---------------
+                        1
+                a2 + ----------
+                        ...
+
+    where a0 >= 0 and a1,a2,... > 0 are integers, called the terms
+    of the CF. This sequence is written [a0; a1, a2, ...].
+    It may be finite (iff the number x is rational) or infinite.
+    When it is finite, the last term is > 1 (canonical CF).
 *)
 
 type t
