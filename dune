@@ -7,3 +7,8 @@
  (name test)
  (modules test)
  (libraries cfrac))
+
+(executable
+ (name bench)
+ (modules bench)
+ (libraries cfrac))

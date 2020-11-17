@@ -88,6 +88,19 @@ let to_float x =
       else
         lookup (Z.cdiv t60 a0)
 
+(* Another solution: convert convergents to floats, until we get twice the
+   same floating point number. It happens to be slower, though (because
+   it does more calls to Q.to_float). *)
+let _to_float x =
+  let rec lookup last cv = match cv () with
+    | Nil -> last
+    | Cons (q, cv) ->
+        let f = Q.to_float q in
+        if f = last then f else lookup f cv in
+  match convergents x () with
+  | Nil -> assert false
+  | Cons (q, cv) -> lookup (Q.to_float q) cv
+
 let print_precision = ref 5
 let set_print_precision = (:=) print_precision
 
