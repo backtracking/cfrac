@@ -9,6 +9,8 @@ let display ?(n=10) name cf =
   printf "  ~ %.15f@." (to_float cf);
   printf "@."
 
+let displayq s = display s (of_qstring s)
+
 let () = display "0" zero
 let () = display "1" one
 
@@ -99,3 +101,6 @@ let () = display "" (of_ilist [39; 2; 1; 2; 2; 1; 4])
 let () =
   let cf = ihomography ~a:1 ~b:1 ~c:(-1) ~d:1 e in
   display "coth(1/2) = (e+1)/(e-1)" cf
+
+let () = displayq "1/7"
+let () = printf "pi = %a@." (print_decimals ~prec:98) pi

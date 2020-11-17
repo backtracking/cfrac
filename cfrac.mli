@@ -169,8 +169,9 @@ val phi: t
 (** The golden ratio i.e. (1+sqrt(5))/2. *)
 
 val pi: t
-(** Only contains the first 100 terms of the continued fraction of pi.
-    Fails if we try to access terms beyond. *)
+(** Only contains the first 98 terms of the continued fraction of pi.
+    Fails if we try to access terms beyond.
+    Source: https://oeis.org/A001203 *)
 
 val e: t
 (** Euler's number. *)

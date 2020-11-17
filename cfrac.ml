@@ -125,6 +125,10 @@ let print_convergents ~prec fmt x =
 
 let ten = Z.of_int 10
 
+(* TODO: make some effort to detect the periodic decimals and to
+   print them as such, e.g. 0.(142857)
+   Do that when the period is smaller than the number of decimals
+   to print, which is necessarily the case when b <= n. *)
 let rec print_rat n fmt a b =
   if a <> Z.zero then
     if n = 0 then Format.fprintf fmt "..." else (
@@ -136,36 +140,40 @@ let rec print_rat n fmt a b =
 let print_decimals ~prec fmt x =
   let rec print n a b c d fmt cf =
     (* invariant 0 <= a/b, c/d <= 10 *)
+    (* Note: we would like to say instead 0 < a/b, c/d < 10 but this is actually
+       not the case at the very first step, that is 0/1 10/a.
+       Indeed, the first term a may be 1. But then it cannot be the last term
+       (which cannot be one), so there will be another step and the invariant
+       will be established. *)
     if debug then
       Format.eprintf "  %d %a/%a %a/%a@." n Z.pp_print a
         Z.pp_print b Z.pp_print c Z.pp_print d;
-    if n = 0 then begin
+    if n = 0 then
       match cf () with Nil when c = Z.zero -> () | _ -> Format.fprintf fmt "..."
-    end else begin
+    else (
       let z = Z.fdiv a b in
       let z' = Z.fdiv c d in
       assert Z.(zero <= z && z <= ten);
       assert Z.(zero <= z' && z' <= ten);
-      if z = z' then begin
+      if z = z' then ( (* we have a digit *)
         Format.fprintf fmt "%a" Z.pp_print z;
         print (n-1) Z.(ten*(a-b*z)) b Z.(ten*(c-d*z)) d fmt cf
-        (* FIXME: do we need to simplify ten*...? *)
-      end else match cf () with
-      | Nil -> if debug then Format.fprintf fmt "[STOP %a/%a %a/%a]" Z.pp_print a
-                 Z.pp_print b Z.pp_print c Z.pp_print d;
-               print_rat n fmt c d
+        (* FIXME: do we need to simplify ten*.../d ? *)
+      ) else match cf () with
+      | Nil ->
+          if debug then Format.fprintf fmt "[STOP %a/%a %a/%a]" Z.pp_print a
+                          Z.pp_print b Z.pp_print c Z.pp_print d;
+          print_rat n fmt c d
       | Cons (z, cf) ->
-          let e = Z.(z * c + a) in
-          let f = Z.(z * d + b) in
-          print n c d e f fmt cf
-    end in
+          print n c d Z.(z * c + a) Z.(z * d + b) fmt cf
+    ) in
   let z, x = first x in
   match x () with
   | Nil -> Z.pp_print fmt z
   | Cons (a, x) ->
       Format.fprintf fmt "@[<hov 2>%a.%a@]"
         Z.pp_print z (print prec Z.zero Z.one ten a) x
-        (* FIXME: do we need to simplify 10/a? *)
+      (* FIXME: do we need to simplify 10/a ? *)
 
 (** {2 constructors} *)
 

@@ -1,7 +1,6 @@
 
 # TODO
 
-* improve to_float
 * Pell-Fermat i.e. the CF of sqrt(n) for a non-square integer n
 * solutions of quadratic equations
     i.e. (a + b sqrt(c)) / d
@@ -14,5 +13,8 @@
 # Sources
 
   https://perl.plover.com/classes/cftalk/INFO/
+  https://github.com/mjdominus/cf
 
   https://hal.inria.fr/inria-00075792/document
+
+  https://crypto.stanford.edu/pbc/notes/contfrac/convert.html
