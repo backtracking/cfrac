@@ -52,20 +52,28 @@ val best_approx: Z.t -> t -> Q.t
     |qx-p| < |bx-a| for any other approximation a/b of x with b <= d. *)
 
 val to_float: t -> float
+val to_float1: t -> float
+val to_float2: t -> float
 (** Converts to a floating-point number.
     The result is the floating-point number closest to the given
     rational; ties break to even mantissa. *)
 
-val print: Format.formatter -> t -> unit
-(** Print a continued fraction as "[a0; a1, a2, ...]" up to some term given by
-    some internal precision (5 by default, but this can be changed using
-    function [set_print_precision] below).
+val print: prec:int -> Format.formatter -> t -> unit
+(** Print a continued fraction as "[a0; a1, a2, ...]" up to [prec+1] terms.
     If there are more terms, an ellipsis "..." is printed.
     Otherwise, the list ends with the last term. *)
 
-val set_print_precision: int -> unit
-(** Set the precision used by [print].
-    The default precision is 5. *)
+val print_decimals: prec:int -> Format.formatter -> t -> unit
+(** Print the first [prec] decimals.
+    If there are more decimals to come, an ellipsis "..." is printed.
+    Otherwise, the list ends with the last decimal. *)
+
+val print_convergents: prec:int -> Format.formatter -> t -> unit
+(** Print the sequence of convergents, up to [prec] fractions.
+    If there are more convergents to come, an ellipsis "..." is printed.
+    Otherwise, the list ends with the last convergent.
+
+    Merely a convenient wrapper over [convergents]. *)
 
 (** {2 Some constructors}
 

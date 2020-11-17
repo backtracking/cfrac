@@ -2,21 +2,11 @@
 open Format
 open Cfrac
 
-let () = set_print_precision 10
-
-let rec print_convergents n fmt cv = match cv () with
-  | Seq.Nil -> ()
-  | Seq.Cons _ when n = 0 -> fprintf fmt "..."
-  | Seq.Cons (Q.{ num; den }, cv) ->
-      fprintf fmt "%a/%a,@ %a" Z.pp_print num Z.pp_print den
-        (print_convergents (n - 1)) cv
-
-let print_convergents ~n fmt cv =
-  fprintf fmt "@[<hov 2>%a@]" (print_convergents n) (convergents cv)
-
 let display ?(n=10) name cf =
-  printf "%s = %a@." name print cf;
-  printf "  = %a@." (print_convergents ~n) cf;
+  printf "%s = %a@." name (print ~prec:n) cf;
+  printf "  = %a@." (print_convergents ~prec:n) cf;
+  printf "  = %a@." (print_decimals ~prec:20) cf;
+  printf "  ~ %.15f@." (to_float cf);
   printf "@."
 
 let () = display "0" zero

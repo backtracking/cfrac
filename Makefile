@@ -3,7 +3,10 @@ all:
 	dune build
 
 test:
-	dune runtest
+	dune runtest --no-buffer
+
+bench:
+	dune exec ./bench.exe
 
 doc:
 	dune build @doc

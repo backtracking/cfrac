@@ -15,6 +15,8 @@
 
 open Seq
 
+let debug = false
+
 type t = Z.t Seq.t
 (* this is a nonempty sequence (the first term is the floor) *)
 
@@ -55,7 +57,7 @@ let best_approx d x =
    3. if the convergent q is of odd order and q >= f or
       if the convergent q is of even order and q <= f, then return f
    4. otherwise, repeat with the new convergent *)
-let to_float x =
+let to_float1 x =
   let a0, cf = first x in
   let lookup d =
     let rec conv odd hn_2 hn_1 kn_2 kn_1 cf = match cf () with
@@ -76,19 +78,20 @@ let to_float x =
           else
             conv (not odd) hn_1 hn kn_1 kn cf in
     conv true Z.one a0 Z.zero Z.one cf in
-  let t60 = Z.(pow (of_int 2) 60) in
+  let t30 = Z.(pow (of_int 2) 30) in
+  let _t60 = Z.(pow (of_int 2) 60) in
   if a0 = Z.zero then
     match cf () with
     | Nil -> 0.
     | Cons (a1, _) -> assert (Z.sign a1 > 0);
-                      lookup (Z.mul t60 a1)
+                      lookup (Z.mul t30 (Z.sqrt a1))
   else
-    lookup (Z.cdiv t60 a0)
+    lookup (Z.cdiv t30 (Z.sqrt a0))
 
 (* Another solution: convert convergents to floats, until we get twice the
    same floating point number. It happens to be slower on some cases
    (e.g. phi, sqrt2) but faster on others (e.g. pi). *)
-let _to_float x =
+let to_float2 x =
   let rec lookup last cv = match cv () with
     | Nil -> last
     | Cons (q, cv) ->
@@ -97,18 +100,72 @@ let _to_float x =
   let q, cv = first (convergents x) in
   lookup (Q.to_float q) cv
 
-let print_precision = ref 5
-let set_print_precision = (:=) print_precision
+let to_float x =
+  let f = to_float1 x in
+  assert (to_float2 x = f);
+  f
 
-let print fmt cf =
+let print ~prec fmt x =
   let rec print n fmt a = match a () with
     | Nil -> ()
     | Cons _ when n = 0 -> Format.fprintf fmt "..."
     | Cons (an, a) ->
         Format.fprintf fmt "%a,@ %a" Z.pp_print an (print (n-1)) a in
-  let a0, a = first cf in
-  Format.fprintf fmt "[@[<hov 2> %a;@ %a@]]"
-    Z.pp_print a0 (print !print_precision) a
+  let a0, a = first x in
+  Format.fprintf fmt "[@[<hov 2> %a;@ %a@]]" Z.pp_print a0 (print prec) a
+
+let print_convergents ~prec fmt x =
+  let rec print_convergents n fmt cv = match cv () with
+  | Seq.Nil -> ()
+  | Seq.Cons _ when n = 0 -> Format.fprintf fmt "..."
+  | Seq.Cons (Q.{ num; den }, cv) ->
+      Format.fprintf fmt "%a/%a,@ %a" Z.pp_print num Z.pp_print den
+        (print_convergents (n - 1)) cv in
+  Format.fprintf fmt "@[<hov 2>%a@]" (print_convergents prec) (convergents x)
+
+let ten = Z.of_int 10
+
+let rec print_rat n fmt a b =
+  if a <> Z.zero then
+    if n = 0 then Format.fprintf fmt "..." else (
+      let q, r = Z.div_rem a b in
+      Z.pp_print fmt q;
+      print_rat (n-1) fmt Z.(ten*r) b
+    )
+
+let print_decimals ~prec fmt x =
+  let rec print n a b c d fmt cf =
+    (* invariant 0 <= a/b, c/d <= 10 *)
+    if debug then
+      Format.eprintf "  %d %a/%a %a/%a@." n Z.pp_print a
+        Z.pp_print b Z.pp_print c Z.pp_print d;
+    if n = 0 then begin
+      match cf () with Nil when c = Z.zero -> () | _ -> Format.fprintf fmt "..."
+    end else begin
+      let z = Z.fdiv a b in
+      let z' = Z.fdiv c d in
+      assert Z.(zero <= z && z <= ten);
+      assert Z.(zero <= z' && z' <= ten);
+      if z = z' then begin
+        Format.fprintf fmt "%a" Z.pp_print z;
+        print (n-1) Z.(ten*(a-b*z)) b Z.(ten*(c-d*z)) d fmt cf
+        (* FIXME: do we need to simplify ten*...? *)
+      end else match cf () with
+      | Nil -> if debug then Format.fprintf fmt "[STOP %a/%a %a/%a]" Z.pp_print a
+                 Z.pp_print b Z.pp_print c Z.pp_print d;
+               print_rat n fmt c d
+      | Cons (z, cf) ->
+          let e = Z.(z * c + a) in
+          let f = Z.(z * d + b) in
+          print n c d e f fmt cf
+    end in
+  let z, x = first x in
+  match x () with
+  | Nil -> Z.pp_print fmt z
+  | Cons (a, x) ->
+      Format.fprintf fmt "@[<hov 2>%a.%a@]"
+        Z.pp_print z (print prec Z.zero Z.one ten a) x
+        (* FIXME: do we need to simplify 10/a? *)
 
 (** {2 constructors} *)
 
@@ -205,7 +262,6 @@ let _print_bound fmt = function
 *)
 let homography ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero) x =
   if c = Z.zero && d = Z.zero then invalid_arg "homography";
-  let debug = false in
   let rec next a b c d x () =
     if debug then
       Format.eprintf "state is %a %a / %a %a@."
@@ -265,7 +321,6 @@ let bihomography
   ?(e=Z.zero) ?(f=Z.zero) ?(g=Z.zero) ?(h=Z.zero) x y =
   if e = Z.zero && f = Z.zero && g = Z.zero && h = Z.zero then
     invalid_arg "bihomography";
-  let debug = false in
   let rec next a b c d e f g h x y () =
     if debug then
       Format.eprintf "state is %a %a %a %a / %a %a %a %a@."

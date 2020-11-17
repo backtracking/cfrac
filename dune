@@ -11,4 +11,4 @@
 (executable
  (name bench)
  (modules bench)
- (libraries cfrac))
+ (libraries unix cfrac))
