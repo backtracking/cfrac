@@ -89,8 +89,8 @@ let to_float x =
         lookup (Z.cdiv t60 a0)
 
 (* Another solution: convert convergents to floats, until we get twice the
-   same floating point number. It happens to be slower, though (because
-   it does more calls to Q.to_float). *)
+   same floating point number. It happens to be slower on some cases
+   (e.g. phi, sqrt2) but faster on others (e.g. pi). *)
 let _to_float x =
   let rec lookup last cv = match cv () with
     | Nil -> last

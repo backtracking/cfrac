@@ -50,6 +50,9 @@ val best_approx: Z.t -> t -> Q.t
     |qx-p| < |bx-a| for any other approximation a/b of x with b <= d. *)
 
 val to_float: t -> float
+(** Converts to a floating-point number.
+    The result is the floating-point number closest to the given
+    rational; ties break to even mantissa. *)
 
 val print: Format.formatter -> t -> unit
 (** Print a continued fraction as "[a0; a1, a2, ...]" up to some term given by
