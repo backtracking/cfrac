@@ -16,12 +16,12 @@
 open Seq
 
 type t = Z.t Seq.t
-(* this is nonempty sequence *)
+(* this is a nonempty sequence (the first term is the floor) *)
 
 let terms cf = cf
 
-let first cf = match cf () with Nil -> assert false | Cons (a0, a) -> a0, a
-let int_part cf = fst (first cf)
+let first s = match s () with Nil -> assert false | Cons (x, y) -> x, y
+let floor cf = fst (first cf)
 
 let convergents cf =
   let rec seq hn_2 hn_1 kn_2 kn_1 cf () = match cf () with
@@ -45,9 +45,8 @@ let best_approx d x =
     | Nil -> q
     | Cons _ when q.Q.den >= d -> q
     | Cons (q, cv) -> lookup q cv in
-  match convergents x () with
-  | Nil -> assert false
-  | Cons (q, cv) -> lookup q cv
+  let q, cv = first (convergents x) in
+  lookup q cv
 
 (* Conversion to a float. (Algorithm by Guillaume Melquiond)
    1. find a lower bound M of x
@@ -57,36 +56,34 @@ let best_approx d x =
       if the convergent q is of even order and q <= f, then return f
    4. otherwise, repeat with the new convergent *)
 let to_float x =
-  match x () with
-  | Nil -> assert false
-  | Cons (a0, cf) ->
-      let lookup d =
-        let rec conv odd hn_2 hn_1 kn_2 kn_1 cf = match cf () with
-          | Nil ->
-              (* we have an exact rational value *)
-              Q.(to_float { num = hn_1; den = kn_1 })
-          | Cons (an, cf) ->
-              (* otherwise, compute the next convergent (which is odd iff odd) *)
-              let hn = Z.(an * hn_1 + hn_2) in
-              let kn = Z.(an * kn_1 + kn_2) in
-              if kn >= d then
-                let q = Q.{ num = hn; den = kn } in
-                let f = Q.to_float q in
-                if if odd then Q.(q >= of_float f) else Q.(q <= of_float f) then
-                  f
-                else
-                  conv (not odd) hn_1 hn kn_1 kn cf
-              else
-                conv (not odd) hn_1 hn kn_1 kn cf in
-        conv true Z.one a0 Z.zero Z.one cf in
-      let t60 = Z.(pow (of_int 2) 60) in
-      if a0 = Z.zero then
-        match cf () with
-        | Nil -> 0.
-        | Cons (a1, _) -> assert (Z.sign a1 > 0);
-                          lookup (Z.mul t60 a1)
-      else
-        lookup (Z.cdiv t60 a0)
+  let a0, cf = first x in
+  let lookup d =
+    let rec conv odd hn_2 hn_1 kn_2 kn_1 cf = match cf () with
+      | Nil ->
+          (* we have an exact rational value *)
+          Q.(to_float { num = hn_1; den = kn_1 })
+      | Cons (an, cf) ->
+          (* otherwise, compute the next convergent (which is odd iff odd) *)
+          let hn = Z.(an * hn_1 + hn_2) in
+          let kn = Z.(an * kn_1 + kn_2) in
+          if kn >= d then
+            let q = Q.{ num = hn; den = kn } in
+            let f = Q.to_float q in
+            if if odd then Q.(q >= of_float f) else Q.(q <= of_float f) then
+              f
+            else
+              conv (not odd) hn_1 hn kn_1 kn cf
+          else
+            conv (not odd) hn_1 hn kn_1 kn cf in
+    conv true Z.one a0 Z.zero Z.one cf in
+  let t60 = Z.(pow (of_int 2) 60) in
+  if a0 = Z.zero then
+    match cf () with
+    | Nil -> 0.
+    | Cons (a1, _) -> assert (Z.sign a1 > 0);
+                      lookup (Z.mul t60 a1)
+  else
+    lookup (Z.cdiv t60 a0)
 
 (* Another solution: convert convergents to floats, until we get twice the
    same floating point number. It happens to be slower on some cases
@@ -97,9 +94,8 @@ let _to_float x =
     | Cons (q, cv) ->
         let f = Q.to_float q in
         if f = last then f else lookup f cv in
-  match convergents x () with
-  | Nil -> assert false
-  | Cons (q, cv) -> lookup (Q.to_float q) cv
+  let q, cv = first (convergents x) in
+  lookup (Q.to_float q) cv
 
 let print_precision = ref 5
 let set_print_precision = (:=) print_precision

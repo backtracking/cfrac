@@ -27,8 +27,9 @@ type t
 val terms: t -> Z.t Seq.t
 (** The terms of the continued fraction. *)
 
-val int_part: t -> Z.t
-(** The integer part of the continued fraction, i.e. the very first term .*)
+val floor: t -> Z.t
+(** The floor function.
+    This is the very first term of the continued fraction. *)
 
 val convergents: t -> Q.t Seq.t
 (** The successive convergents of the continued fraction.
@@ -40,8 +41,9 @@ val nth_convergent: int -> t -> Q.t
 (** Merely a convenience function built on top of [convergents].
     Raises [Invalid_argument] is there is no such convergent, i.e. if
     the sequence of convergents has fewer elements.
+
     Note: [nth_convergent 0] returns the integer part of the
-    continued fraction, and thus is identical to [int_part]. *)
+    continued fraction, and thus is identical to [floor]. *)
 
 val best_approx: Z.t -> t -> Q.t
 (** [best_approx d x] returns the best rational approximation of [x] with a
@@ -188,7 +190,7 @@ val sqrt3: t
 
     CAVEAT: It is already possible to obtain non-terminating computations using
     the functions above. For instance, if we build [mul sqrt2 sqrt2], any attempt
-    at observing it, even with [int_part], will run forever.
+    at observing it, even with [floor], will run forever.
 *)
 
 type 'a semi = Sure of 'a | CantDecide

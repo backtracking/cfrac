@@ -37,7 +37,7 @@ let () = display "phi^2" (mul phi phi)
 let () = display "phi+1" (iadd 1 phi)
 
 let cf_42 = of_int 42
-let () = assert (int_part cf_42 = Z.of_int 42)
+let () = assert (floor cf_42 = Z.of_int 42)
 
 let () = display "22/7" (of_qstring "22/7")
 let () = display "355/113" (of_qstring "355/113")
