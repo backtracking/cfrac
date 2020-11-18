@@ -50,6 +50,8 @@ let best_approx d x =
   let q, cv = first (convergents x) in
   lookup q cv
 
+let two = Z.of_int 2
+
 (* Conversion to a float. (Algorithm by Guillaume Melquiond)
    1. find a lower bound M of x
    2. compute a convergent q of x with a denominator at least ceil(2^60/M)
@@ -78,8 +80,7 @@ let to_float1 x =
           else
             conv (not odd) hn_1 hn kn_1 kn cf in
     conv true Z.one a0 Z.zero Z.one cf in
-  let t30 = Z.(pow (of_int 2) 30) in
-  let _t60 = Z.(pow (of_int 2) 60) in
+  let t30 = Z.(pow two 30) in
   if a0 = Z.zero then
     match cf () with
     | Nil -> 0.
@@ -324,18 +325,18 @@ let _idiff p q =
 
   that Gosper calls a ``bihomographic function''.
 
-     <------x emits p---------
-
-    ...   a+bp      b     a    |
-           e+fp      f     e   |
-                               |
-          c+dp      d     c    |
-           g+hp       h     g  |
-                               |
-                  b+dq   a+cq  |  y emits q
-                   f+hq   e+gq |
-                               |
-                      ...      V
+     +------------------x emits p--------->
+     |
+     |        a      b     a+bp    ...
+     |         e      f     e+fp
+     |
+     |        c      d     c+dp    ...
+     |         g      h     g+hp
+ y emits q
+     |        a+cq   b+dq
+     |         e+gq   f+hq      .
+     |                            .
+     V        ...    ...            .
 
 *)
 let bihomography
@@ -403,6 +404,53 @@ let rec memo cf =
                                             r := Done v; v)
              | Done x -> x)
 
+(* Convert a generalized CF (with arbitrary numerators) to a simple CF.
+   In the meantime, we apply the homographic function
+
+    a + bx
+   --------
+    c + dx
+*)
+let generalized ?(a=Z.zero) ?(b=Z.one) ?(c=Z.one) ?(d=Z.zero) g =
+  let rec loop pold qold p q num den g () =
+    if debug then Format.eprintf "LOOP %a/%a %a/%a %a/%a@."
+        Z.pp_print pold Z.pp_print qold Z.pp_print p Z.pp_print q
+        Z.pp_print num Z.pp_print den;
+    let pold, qold, p, q =
+      p, q, Z.(pold*num + p*den), Z.(qold*num + q*den) in
+    let pold, qold, p, q = Z.(
+      let t = gcd (gcd p q) (gcd pold qold) in
+      if t <> one then
+        divexact pold t, divexact qold t, divexact p t, divexact q t
+      else
+        pold, qold, p, q) in
+    if debug then Format.eprintf "LOOP %a/%a %a/%a@."
+        Z.pp_print pold Z.pp_print qold Z.pp_print p Z.pp_print q;
+    if qold = Z.zero then
+      input pold qold p q g
+    else
+      let t1, t0 = Z.div_rem pold qold in
+      let t2 = Z.(q * t1) in
+      if t2 <= p then
+        let t2 = Z.(t2 + q) in
+        if t2 > p then
+          let t2 = Z.(p + q - t2) in
+          Cons (t1, fun () -> input qold t0 q t2 g)
+        else
+          input pold qold p q g
+      else
+        input pold qold p q g
+    and input pold qold p q g = match g () with
+      | Nil ->
+          of_q Q.{ num = p; den = q } ()
+      | Cons (num, g) ->
+          let den, g = first g in
+          loop pold qold p q num den g ()
+  in
+  match g () with
+  | Nil -> invalid_arg "generalized"
+  | Cons (den, g) -> loop a b c d Z.one den g
+
 (** {2 Some continued fractions} *)
 
 let rec constant z () = Cons (z, constant z)
@@ -411,26 +459,23 @@ let rec constant z () = Cons (z, constant z)
 let phi = constant Z.one
 
 (* sqrt(2) = [1; (2)] *)
-let sqrt2 () = Cons (Z.one, constant (Z.of_int 2))
+let sqrt2 () = Cons (Z.one, constant two)
 
 (* sqrt(3) = [1; (1, 2)] *)
 let sqrt3 =
-  let l12 = [Z.one; Z.of_int 2] in periodic [Z.one] (fun _ -> l12)
+  let l12 = [Z.one; two] in periodic [Z.one] (fun _ -> l12)
 
+(* using 4/pi = 1 + 1/(3 + 4/(5 + 9/(7 + 16/(9 + ...)))) *)
 let pi =
-  let rec cf = function
-    | [] -> failwith "precision of pi exceeded"
-    | ai :: a -> fun () -> Cons (Z.of_int ai, cf a) in
-  cf
-    (* https://oeis.org/A001203 *)
-    [3; 7; 15; 1; 292; 1; 1; 1; 2; 1; 3; 1; 14; 2; 1; 1; 2; 2; 2; 2; 1; 84;
-        2; 1; 1; 15; 3; 13; 1; 4; 2; 6; 6; 99; 1; 2; 2; 6; 3; 5; 1; 1; 6; 8;
-        1; 7; 1; 2; 3; 7; 1; 2; 1; 1; 12; 1; 1; 1; 3; 1; 1; 8; 1; 1; 2; 1; 6;
-        1; 1; 5; 2; 2; 3; 1; 2; 4; 4; 16; 1; 161; 45; 1; 22; 1; 2; 2; 1; 4;
-        1; 2; 24; 1; 2; 1; 3; 1; 2; 1]
+  let rec gen n d () =
+    Cons (d, fun () ->
+    Cons (n, let d = Z.(d + two) in gen Z.(n + d) d)) in
+  generalized ~a:(Z.of_int 4) ~b:Z.zero ~c:Z.zero ~d:Z.one (gen Z.one Z.one)
+
+let pi = memo pi
 
 (* e = [2; 1,2,1, 1,4,1, 1,6,1, 1,8,1, ...] = [2; (1, 2n+2, 1)] *)
-let e = periodic [Z.of_int 2] (fun n -> [Z.one; Z.of_int (2*n+2); Z.one])
+let e = periodic [two] (fun n -> [Z.one; Z.of_int (2*n+2); Z.one])
 
 (** {Semi-computable functions} *)
 

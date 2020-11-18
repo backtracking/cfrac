@@ -15,7 +15,6 @@ let () = display "0" zero
 let () = display "1" one
 
 let () = display "pi" pi
-let () = printf "pi ~ %.15f@.@." (to_float pi)
 let () =
   printf "approx pi 10-6 = %a@.@."
     Q.pp_print (best_approx (Z.of_int 1_000_000) pi)
@@ -57,7 +56,7 @@ let () =
 let () = display "sqrt(2)" sqrt2
 let () = display "1/sqrt(2)" (inv sqrt2)
 let () = display "sqrt(2)/2" (idiv sqrt2 2)
-let () = printf "sqrt(2) = %.15f (%.15f)@.@." (to_float sqrt2) (sqrt 2.)
+let () = assert (to_float sqrt2 = sqrt 2.)
 
 let () = display "sqrt(3)" sqrt3
 
@@ -103,7 +102,7 @@ let () =
   display "coth(1/2) = (e+1)/(e-1)" cf
 
 let () = displayq "1/7"
-let () = printf "pi = %a@." (print_decimals ~prec:98) pi
+let () = printf "pi = %a@." (print_decimals ~prec:100) pi
 let () = printf "phi = %a@." (print_decimals ~prec:1000) phi
 
 let () =

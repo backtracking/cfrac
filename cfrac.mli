@@ -119,9 +119,10 @@ val print_convergents: prec:int -> Format.formatter -> t -> unit
     if they are called with a negative argument.
 
   - Function [of_q] returns a finite sequence --- rational numbers are exactly
-    the real numbers with finite continued fractions --- whose last term is not 1.
-    For instance, the continued fraction of 355/113 will be [3; 7, 16] and
-    not [3; 7, 15, 1], even if the latter could be considered legitimate as well.
+    the real numbers with finite continued fractions --- whose last term is
+    not 1. For instance, the continued fraction of 355/113 will be [3; 7, 16]
+    and not [3; 7, 15, 1], even if the latter could be considered legitimate
+    as well.
 
   - Functions such as [of_seq], [of_fun], [of_list], etc., raise
     [Invalid_argument] when a term is nonpositive (apart from the very
@@ -172,7 +173,7 @@ val memo: t -> t
 
 val homography: ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t -> t -> t
 (** [homography a b c d x] returns (a+bx)/(c+dx).
-    Values of a, b, c,d default to 0.
+    Values of a, b, c, d default to 0.
     Will raise [Invalid_argument] if both [c] and [d] are 0. *)
 
 val ihomography: ?a:int -> ?b:int -> ?c:int -> ?d:int -> t -> t
@@ -194,6 +195,7 @@ val bihomography:
   ?e:Z.t -> ?f:Z.t -> ?g:Z.t -> ?h:Z.t ->
   t -> t -> t
 (** [bihomography a b c d e f g h x y] returns (a+bx+cy+dxy)/(e+fx+gy+hxy).
+    Values of a, b, c, d, e, f, g, h default to 0.
     Will raise [Invalid_argument] if [e], [f], [g], and [h] are all 0. *)
 
 val ibihomography:
@@ -206,15 +208,18 @@ val sub: t -> t -> t
 val mul: t -> t -> t
 val div: t -> t -> t
 
+val generalized: ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t -> Z.t Seq.t -> t
+(** ...
+    Default values for a,b,c,d are 0,1,1,0 (identity). *)
+
 (** {2 Some continued fractions} *)
 
 val phi: t
 (** The golden ratio i.e. (1+sqrt(5))/2. *)
 
 val pi: t
-(** Only contains the first 98 terms of the continued fraction of pi.
-    Fails if we try to access terms beyond.
-    Source: https://oeis.org/A001203 *)
+(** Does this really need an explanation?
+    Already memoized. *)
 
 val e: t
 (** Euler's number. *)
@@ -227,31 +232,32 @@ val sqrt3: t
 
 (** {2 Semi-computable functions}
 
-    When implementing real numbers in a computer, there are several operations we
-    cannot implement, such as comparing two numbers, etc. This could run forever.
-    Yet, there are cases where the computation could terminate. Comparison, for
-    instance, will terminate if the two arguments happen to be different.
+    When implementing real numbers in a computer, there are several operations
+    we cannot implement, such as comparing two numbers, etc. This could run
+    forever. Yet, there are cases where the computation could terminate.
+    Comparison, for instance, will terminate if the two arguments happen to be
+    different.
 
-    Below are some functions in this category. Their running time is controlled with
-    a [fuel] argument, which is decreased at each step in the internal computation.
+    Below are some functions in this category. Their running time is
+    controlled by a [fuel] argument, which is decreased at each step in the
+    internal computation.
     If ever the fuel reaches 0, the computation stops, with answer [CantDecide].
-    If ever the answer can be computed before we run out of fuel, it is returned
-    as [Sure r] where [r] is the answer.
+    If ever the answer can be computed before we run out of fuel, it is
+    returned as [Sure r] where [r] is the answer.
 
     The default value for the fuel is 20.
 
     CAVEAT: It is already possible to obtain non-terminating computations using
-    the functions above. For instance, if we build [mul sqrt2 sqrt2], any attempt
-    at observing it, even with [floor], will run forever.
-*)
+    the functions above. For instance, if we build [mul sqrt2 sqrt2],
+    any attempt at observing it, even with [floor], will run forever. *)
 
 type 'a semi = Sure of 'a | CantDecide
 
 val compare: ?fuel:int -> t -> t -> int semi
-(** [compare x y] returns either [-1] (which means [x < y]), [0] (which means [x = y]),
-    or [1] (which means [x > y]). The answer [0] is only possible when both [x] and
-    [y] are rational numbers (and that we can figure this out before we run out of
-    fuel). *)
+(** [compare x y] returns either [-1] (which means [x < y]), [0] (which means
+    [x = y]), or [1] (which means [x > y]). The answer [0] is only possible
+    when both [x] and [y] are rational numbers (and that we can figure this
+    out before we run out of fuel). *)
 
 val equal: ?fuel:int -> t -> t -> bool semi
 
