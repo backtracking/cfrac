@@ -108,5 +108,5 @@ let () = printf "phi = %a@." (print_decimals ~prec:1000) phi
 
 let () =
   for n = 2 to 31 do
-    printf "1/%2d = %a@." n (print_decimals ~prec:15) (iinv n)
+    printf "1/%2d = %a@." n (print_decimals ~prec:60) (iinv n)
   done
