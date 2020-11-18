@@ -104,3 +104,9 @@ let () =
 
 let () = displayq "1/7"
 let () = printf "pi = %a@." (print_decimals ~prec:98) pi
+let () = printf "phi = %a@." (print_decimals ~prec:1000) phi
+
+let () =
+  for n = 2 to 31 do
+    printf "1/%2d = %a@." n (print_decimals ~prec:60) (iinv n)
+  done

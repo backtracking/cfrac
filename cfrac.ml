@@ -156,7 +156,7 @@ let print_decimals ~prec fmt x =
       assert Z.(zero <= z && z <= ten);
       assert Z.(zero <= z' && z' <= ten);
       if z = z' then ( (* we have a digit *)
-        Format.fprintf fmt "%a" Z.pp_print z;
+        Format.fprintf fmt "%a@," Z.pp_print z;
         print (n-1) Z.(ten*(a-b*z)) b Z.(ten*(c-d*z)) d fmt cf
         (* FIXME: do we need to simplify ten*.../d ? *)
       ) else match cf () with
@@ -196,6 +196,9 @@ let of_q Q.{ num; den } =
          fun () -> Cons (a, euclid q r) in
   let q, r = Z.div_rem num den in
   fun () -> Cons (q, euclid den r)
+
+let iinv n =
+  of_q Q.{ num = Z.one; den = Z.of_int n }
 
 let of_qstring s =
   of_q (Q.of_string s)
@@ -377,6 +380,17 @@ let add x y = ibihomography ~b:1 ~c:1         ~e:1          x y
 let sub x y = ibihomography ~b:1 ~c:(-1)      ~e:1          x y
 let mul x y = ibihomography              ~d:1 ~e:1          x y
 let div x y = ibihomography ~b:1                       ~g:1 x y
+
+type 'a memo = Done of 'a | Todo of (unit -> 'a)
+
+let rec memo cf =
+  let r = ref (Todo cf) in
+  (fun () -> match !r with
+             | Todo f -> (match f () with
+                          | Nil -> r := Done Nil; Nil
+                          | Cons (x, cf) -> let v = Cons (x, memo cf) in
+                                            r := Done v; v)
+             | Done x -> x)
 
 (** {2 Some continued fractions} *)
 

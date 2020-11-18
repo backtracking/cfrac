@@ -140,6 +140,12 @@ val periodic: Z.t list -> (int -> Z.t list) -> t
     Each list must be nonempty. The first term must be nonnegative, and next
     terms must be positive. Otherwise, [Invalid_argument] is raised. *)
 
+val memo: t -> t
+(** Returns an identical CF, but with memoization of intermediate
+    computations of terms. Can speed up computations significantly.
+    But this trades time for space, as terms are now kept in memory
+    instead of being recomputed. *)
+
 (** {2 Homographic functions (Bill Gosper, 1972)} *)
 
 val homography: ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t -> t -> t
@@ -159,6 +165,7 @@ val zdiv: t -> Z.t -> t
 val idiv: t -> int -> t
 
 val inv: t -> t
+val iinv: int -> t
 
 val bihomography:
   ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t ->
