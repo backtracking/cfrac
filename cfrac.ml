@@ -125,13 +125,32 @@ let print_convergents ~prec fmt x =
 
 let ten = Z.of_int 10
 
-(* TODO: make some effort to detect the periodic decimals and to
-   print them as such, e.g. 0.(142857)
-   Do that when the period is smaller than the number of decimals
-   to print, which is necessarily the case when b <= n. *)
-let rec print_rat n fmt a b =
+let print_rat_periodic fmt a b = (* invariant 0 <= a/b < 10 *)
+  let buf = Buffer.create 1024 in
+  let index = Hashtbl.create 256 in
+  let rec loop i a b = (* invariant |buf|=i *)
+    if a = Z.zero then
+      Format.fprintf fmt "%s" (Buffer.contents buf)
+    else match Hashtbl.find_opt index a with
+    | None ->
+        Hashtbl.add index a i;
+        let q, r = Z.div_rem a b in
+        assert (q < ten);
+        Buffer.add_char buf (Char.chr (48 + Z.to_int q));
+        loop (i+1) Z.(ten*r) b
+    | Some p ->
+        Format.fprintf fmt "%s(%s)*"
+         (Buffer.sub buf 0 p) (Buffer.sub buf p (i - p))
+  in
+  loop 0 a b
+
+let rec print_rat n fmt a b = (* invariant 0 <= a/b < 10 *)
   if a <> Z.zero then
-    if n = 0 then Format.fprintf fmt "..." else (
+    if n = 0 then
+      Format.fprintf fmt "..."
+    else if b <= Z.of_int n then
+      print_rat_periodic fmt a b
+    else (
       let q, r = Z.div_rem a b in
       Z.pp_print fmt q;
       print_rat (n-1) fmt Z.(ten*r) b

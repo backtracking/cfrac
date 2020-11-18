@@ -21,18 +21,23 @@
     It provides simple continued fractions, which means
     it represents a real number x >= 0 as
 
-                   1
-      a0 + --------------------
                      1
-           a1 + ---------------
-                        1
-                a2 + ----------
-                        ...
+      x = a0 + --------------------
+                       1
+               a1 + ---------------
+                            1
+                    a2 + ----------
+                            ...
 
     where a0 >= 0 and a1,a2,... > 0 are integers, called the terms
     of the CF. This sequence is written [a0; a1, a2, ...].
-    It may be finite (iff the number x is rational) or infinite.
+
+    The sequence is finite iff the number x is rational.
     When it is finite, the last term is > 1 (canonical CF).
+
+    When it is infinite, it is periodic (after some initial terms) iff
+    the number is an irrational real root of a quadratic equation
+    ax^2+bx+c=0.
 *)
 
 type t
@@ -80,7 +85,24 @@ val print: prec:int -> Format.formatter -> t -> unit
 val print_decimals: prec:int -> Format.formatter -> t -> unit
 (** Print the first [prec] decimals.
     If there are more decimals to come, an ellipsis "..." is printed.
-    Otherwise, the list ends with the last decimal. *)
+    Otherwise, the list ends with the last decimal.
+
+    Whenever the number if rational, with infinitely many decimals,
+    decimals are periodic and [print_decimals] shows the period
+    whenever it fits within the required precision [prec].
+    For instance, 1/28 and 1/29 are printed as
+
+      0.03(571428)*
+      0.0(3448275862068965517241379310)*
+
+    respectively. (Note that the period displayed for 1/29 could be shifted
+    one position to the left. This happens when the very first decimal is 0
+    and is part of the periodic sequence.) If you ever print 1/29 with too
+    few decimals, say 15, then the period is not shown anymore (and instead
+    we get the ellipsis "..."):
+
+      0.034482758620689...
+*)
 
 val print_convergents: prec:int -> Format.formatter -> t -> unit
 (** Print the sequence of convergents, up to [prec] fractions.

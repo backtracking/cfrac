@@ -16,6 +16,8 @@
 
 # Sources
 
+  https://en.wikipedia.org/wiki/Continued_fraction
+
   https://perl.plover.com/classes/cftalk/INFO/
   https://github.com/mjdominus/cf
 
