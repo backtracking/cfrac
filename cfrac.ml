@@ -167,14 +167,12 @@ let print_decimals ~prec fmt x =
 (** {2 constructors} *)
 
 let of_int n =
-  if n < 0 then invalid_arg "of_int";
   return (Z.of_int n)
 
 let zero = of_int 0
 let one  = of_int 1
 
 let of_z z =
-  if Z.sign z < 0 then invalid_arg "of_z";
   return z
 
 let of_q Q.{ num; den } =
@@ -193,15 +191,13 @@ let of_qstring s =
   of_q (Q.of_string s)
 
 let of_float x =
-  if x < 0. then invalid_arg "of_float";
   of_q (Q.of_float x)
 
 let of_seq s =
   let check z = if Z.sign z <= 0 then invalid_arg "of_seq"; z in
   match s () with
   | Nil -> invalid_arg "of_seq"
-  | Cons (z, s) -> if Z.sign z < 0 then invalid_arg "of_seq";
-                   fun () -> Cons (z, Seq.map check s)
+  | Cons (z, s) -> fun () -> Cons (z, Seq.map check s)
 
 let of_fun f =
   let rec loop i () =
@@ -210,7 +206,6 @@ let of_fun f =
     if Z.sign z = 0 then Nil else Cons (z, loop (i + 1)) in
   fun () ->
     let z = f 0 in
-    if Z.sign z < 0 then invalid_arg "of_fun";
     Cons (z, loop 1)
 
 let rec seq_of_list l () = match l with
@@ -220,7 +215,6 @@ let rec seq_of_list l () = match l with
 
 let of_list = function
   | [] -> invalid_arg "of_list"
-  | z :: _ when Z.sign z < 0 -> invalid_arg "of_list"
   | z :: l -> fun () -> Cons (z, seq_of_list l)
 
 let of_ilist l = of_list (List.map Z.of_int l)
@@ -236,7 +230,6 @@ let rec list_flatten f i () = match f i with
 
 let periodic prefix f = match prefix with
   | [] -> invalid_arg "periodic"
-  | z :: _ when Z.sign z < 0 -> invalid_arg "periodic"
   | z :: l -> fun () -> Cons (z, list_concat l (list_flatten f 0))
 
 (** {2 Homographic functions (Bill Gosper, 1972)}
@@ -295,8 +288,15 @@ let inv x =
   let z0, x' = first x in
   if z0 = Z.zero then x' else fun () -> Cons (Z.zero, x)
 
-let _idiff p q =
-  if p = infinity || q = infinity then infinity else abs_float (p -. q)
+let print_decimals ~prec fmt x =
+  let z, x' = first x in
+  match x' () with
+  | Nil -> Z.pp_print fmt z
+  | Cons _ when z >= Z.zero -> print_decimals ~prec fmt x
+  | Cons _ ->
+      (* z + 1/x' = -(-z-1 + 1-1/x') = -(-z-1 + 1/(x/(x-1))) *)
+      let x () = Cons (Z.(-z - one), ihomography ~a:0 ~b:1 ~c:(-1) ~d:1 x') in
+      Format.fprintf fmt "-%a" (print_decimals ~prec) x
 
 (* Given x and y, we wish to compute
 

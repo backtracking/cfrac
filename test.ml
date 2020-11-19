@@ -111,3 +111,6 @@ let () =
 
 let () = display "pi^2/6" (ibihomography ~d:1 pi pi ~e:6)
 
+let () = displayq "-143/12"
+let () = display "sqrt(2) - phi" (sub sqrt2 phi)
+

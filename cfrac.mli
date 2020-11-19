@@ -17,9 +17,8 @@
 
     This is one (cute) way of implementing real numbers in a computer.
 
-    The current implementation is limited to nonnegative real numbers.
     It provides simple continued fractions, which means
-    it represents a real number x >= 0 as
+    it represents a real number x as
 
                      1
       x = a0 + --------------------
@@ -29,7 +28,7 @@
                     a2 + ----------
                             ...
 
-    where a0 >= 0 and a1,a2,... > 0 are integers, called the terms
+    where a0 and a1,a2,... > 0 are integers, called the terms
     of the CF. This sequence is written [a0; a1, a2, ...].
 
     The sequence is finite iff the number x is rational.
@@ -129,9 +128,6 @@ val print_convergents: prec:int -> Format.formatter -> t -> unit
 
   Notes:
 
-  - Functions such as [of_int], [of_z], etc., raise [Invalid_argument]
-    if they are called with a negative argument.
-
   - Function [of_q] returns a finite sequence --- rational numbers are exactly
     the real numbers with finite continued fractions --- whose last term is
     not 1. For instance, the continued fraction of 355/113 will be [3; 7, 16]
@@ -140,7 +136,7 @@ val print_convergents: prec:int -> Format.formatter -> t -> unit
 
   - Functions such as [of_seq], [of_fun], [of_list], etc., raise
     [Invalid_argument] when a term is nonpositive (apart from the very
-    first one, which can be zero).  But the verification is only
+    first one, which can be any).  But the verification is only
     performed when the term is accessed, so it could be much later, or
     even never.  *)
 
@@ -156,26 +152,27 @@ val of_qstring: string -> t
 (** Shortcut for [of_q (Q.of_string s)]. *)
 
 val of_seq: Z.t Seq.t -> t
-(** Will raise [Invalid_argument] if the first term is negative,
-    or if any of the next terms is nonpositive. *)
+(** Will raise [Invalid_argument] if any term is nonpositive (apart from the
+    very first one). *)
 
 val of_fun: (int -> Z.t) -> t
 (** The continued fraction [f(0); f(1), f(2), ...].
-    Will raise [Invalid_argument] if any term is negative.
+    Will raise [Invalid_argument] if any term is negative (apart from the
+    very first one).
     The terms will stop at the first i>0 such that f(i)=0, if any,
     so that it can also be used to describe a finite continued fraction. *)
 
 val of_list: Z.t list -> t
-(** Will raise [Invalid_argument] if the first term is negative or if any
-    other term is nonpositive. *)
+(** Will raise [Invalid_argument] if any other term is nonpositive
+   (apart from the very first one). *)
 
 val of_ilist: int list -> t
 
 val periodic: Z.t list -> (int -> Z.t list) -> t
-(** [periodic prefix f] builds the continued fraction obtained by appending
-    the lists [prefix], [f 0], [f 1], etc.
-    Each list must be nonempty. The first term must be nonnegative, and next
-    terms must be positive. Otherwise, [Invalid_argument] is raised. *)
+(** [periodic prefix f] builds the continued fraction obtained by
+   appending the lists [prefix], [f 0], [f 1], etc.  Each list must be
+   nonempty. The terms must be positive (apart from the very first
+   one). Otherwise, [Invalid_argument] is raised. *)
 
 val memo: t -> t
 (** Returns an identical CF, but with memoization of intermediate
