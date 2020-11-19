@@ -51,10 +51,26 @@ val floor: t -> Z.t
     This is the very first term of the continued fraction. *)
 
 val convergents: t -> Q.t Seq.t
-(** The successive convergents of the continued fraction.
-    Each convergent is in its lowest terms.
+(** The convergents of the continued fraction.
+
+    This is a sequence of rational numbers, obtained by using more and more
+    terms from the continued fraction.
     The very first convergent is the integer part, and thus has
-    denominator 1. *)
+    denominator 1.
+    The sequence of denominators is increasing (if we omit the very first
+    denominator, which is 1 and can also appear as denominator of the
+    second convergent).
+    The convergents are successive approximations of the real number x
+    represented by the continued fraction, of increasing precision.
+    A convergent of even (resp. odd) order is lower (resp. greater) than x.
+
+    Each convergent p/q is in its lowest terms, i.e. gcd(p,q)=1.
+    The following inequality holds: |x - p/q| < 1/q^2.
+    Thus, to get an approximation of x at 1e-6, it suffices to stop
+    computing convergents as soon as q >= 1000.
+
+    A convergent p/q is the best rational approximation of x with
+    a denominator no greater than q. See function [best_approx] below. *)
 
 val nth_convergent: int -> t -> Q.t
 (** Merely a convenience function built on top of [convergents].
