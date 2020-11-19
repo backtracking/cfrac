@@ -108,3 +108,6 @@ let () =
   for n = 2 to 31 do
     printf "1/%2d = %a@." n (print_decimals ~prec:60) (iinv n)
   done
+
+let () = display "pi^2/6" (ibihomography ~d:1 pi pi ~e:6)
+

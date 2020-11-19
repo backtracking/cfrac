@@ -81,7 +81,7 @@ let to_float x =
     | Cons (a1, _) -> assert (Z.sign a1 > 0);
                       start (Z.mul t30 (Z.sqrt a1)) (convergents x)
   else
-    start (Z.cdiv t30 (Z.sqrt a0)) (convergents x)
+    start (Z.cdiv t30 Z.(sqrt (abs a0))) (convergents x)
 
 let print ~prec fmt x =
   let rec print n fmt a = match a () with
@@ -159,6 +159,7 @@ let print_decimals ~prec fmt x =
   match x () with
   | Nil -> Z.pp_print fmt z
   | Cons (a, x) ->
+      assert Z.(z >= zero);
       Format.fprintf fmt "@[<hov 2>%a.%a@]"
         Z.pp_print z (print prec Z.zero Z.one ten a) x
       (* FIXME: do we need to simplify 10/a ? *)
@@ -182,7 +183,7 @@ let of_q Q.{ num; den } =
     if q = Z.zero then empty
     else let a, r = Z.div_rem p q in
          fun () -> Cons (a, euclid q r) in
-  let q, r = Z.div_rem num den in
+  let q, r = Z.ediv_rem num den in
   fun () -> Cons (q, euclid den r)
 
 let iinv n =
@@ -287,7 +288,12 @@ let zmul b x = homography ~b ~c:Z.one x
 let imul b x = ihomography ~b ~c:1 x
 let zdiv x c = homography ~b:Z.one ~c x
 let idiv x c = ihomography ~b:1 ~c x
-let inv x = ihomography ~a:1 ~d:1 x
+
+(* note: [inv] could be derived from [homography] but it has a much simpler
+   formulation *)
+let inv x =
+  let z0, x' = first x in
+  if z0 = Z.zero then x' else fun () -> Cons (Z.zero, x)
 
 let _idiff p q =
   if p = infinity || q = infinity then infinity else abs_float (p -. q)
