@@ -9,20 +9,20 @@ let start, stop =
   (fun () -> printf "=> %f s@." ((times()).tms_utime -. !t))
 
 let test ?(n=1_000_000) msg x =
-  assert (to_float1 x = to_float2 x);
   printf "%s:@." msg;
-  printf "  to_float1: @?";
+  printf "  to_float: @?";
   start ();
-  for _ = 1 to n do
-    ignore (to_float1 x)
-  done;
+  for _ = 1 to n do ignore (to_float x) done;
   stop ();
-  printf "  to_float2: @?";
-  start ();
-  for _ = 1 to n do
-    ignore (to_float2 x)
-  done;
-  stop ()
+  (* printf "  to_float2: @?";
+   * start ();
+   * for _ = 1 to n do ignore (to_float2 x) done;
+   * stop ();
+   * printf "  to_float12: @?";
+   * start ();
+   * for _ = 1 to n do ignore (to_float12 x) done;
+   * stop (); *)
+  ()
 
 let () =
   test "phi" phi;

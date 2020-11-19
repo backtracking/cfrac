@@ -1,6 +1,6 @@
 (library
  (name cfrac)
- (flags ())
+ (flags (:standard -warn-error -26))
  (modules cfrac)
  (libraries zarith))
 

@@ -16,6 +16,8 @@
 open Seq
 
 let debug = false
+let _DEBUG f =
+  if debug then Format.eprintf f else Format.ifprintf Format.err_formatter f
 
 type t = Z.t Seq.t
 (* this is a nonempty sequence (the first term is the floor) *)
@@ -52,59 +54,34 @@ let best_approx d x =
 
 let two = Z.of_int 2
 
-(* Conversion to a float. (Algorithm by Guillaume Melquiond)
+(* Conversion to a float (algorithm by Guillaume Melquiond):
    1. find a lower bound M of x
-   2. compute a convergent q of x with a denominator at least ceil(2^60/M)
+   2. compute a convergent q of x with a denominator at least ceil(2^30/sqrt(M))
       round this to the nearest float f (using Q.to_float)
-   3. if the convergent q is of odd order and q >= f or
-      if the convergent q is of even order and q <= f, then return f
-   4. otherwise, repeat with the new convergent *)
-let to_float1 x =
-  let a0, cf = first x in
-  let lookup d =
-    let rec conv odd hn_2 hn_1 kn_2 kn_1 cf = match cf () with
-      | Nil ->
-          (* we have an exact rational value *)
-          Q.(to_float { num = hn_1; den = kn_1 })
-      | Cons (an, cf) ->
-          (* otherwise, compute the next convergent (which is odd iff odd) *)
-          let hn = Z.(an * hn_1 + hn_2) in
-          let kn = Z.(an * kn_1 + kn_2) in
-          if kn >= d then
-            let q = Q.{ num = hn; den = kn } in
-            let f = Q.to_float q in
-            if if odd then Q.(q >= of_float f) else Q.(q <= of_float f) then
-              f
-            else
-              conv (not odd) hn_1 hn kn_1 kn cf
-          else
-            conv (not odd) hn_1 hn kn_1 kn cf in
-    conv true Z.one a0 Z.zero Z.one cf in
+   3. keep converting the next convergents to floats, until we get twice the
+      same floating point number *)
+let to_float x =
+  let rec phase2 f cv = match cv () with
+    | Nil -> f
+    | Cons (q, cv) ->
+        let f' = Q.to_float q in if f' = f then f else phase2 f' cv in
+  let rec phase1 d q cv = match cv () with
+    | Nil -> Q.to_float q
+    | Cons (q, cv) when q.Q.den >= d -> phase2 (Q.to_float q) cv
+    | Cons (q, cv) -> phase1 d q cv in
+  let start d cv = match cv () with
+    | Nil -> assert false
+    | Cons (q, cv) when q.Q.den >= d -> phase2 (Q.to_float q) cv
+    | Cons (q, cv) -> phase1 d q cv in
   let t30 = Z.(pow two 30) in
+  let a0, cf = first x in
   if a0 = Z.zero then
     match cf () with
     | Nil -> 0.
     | Cons (a1, _) -> assert (Z.sign a1 > 0);
-                      lookup (Z.mul t30 (Z.sqrt a1))
+                      start (Z.mul t30 (Z.sqrt a1)) (convergents x)
   else
-    lookup (Z.cdiv t30 (Z.sqrt a0))
-
-(* Another solution: convert convergents to floats, until we get twice the
-   same floating point number. It happens to be slower on some cases
-   (e.g. phi, sqrt2) but faster on others (e.g. pi). *)
-let to_float2 x =
-  let rec lookup last cv = match cv () with
-    | Nil -> last
-    | Cons (q, cv) ->
-        let f = Q.to_float q in
-        if f = last then f else lookup f cv in
-  let q, cv = first (convergents x) in
-  lookup (Q.to_float q) cv
-
-let to_float x =
-  let f = to_float1 x in
-  assert (to_float2 x = f);
-  f
+    start (Z.cdiv t30 (Z.sqrt a0)) (convergents x)
 
 let print ~prec fmt x =
   let rec print n fmt a = match a () with
@@ -157,8 +134,7 @@ let print_decimals ~prec fmt x =
        Indeed, the first term a may be 1. But then it cannot be the last term
        (which cannot be one), so there will be another step and the invariant
        will be established. *)
-    if debug then
-      Format.eprintf "  %d %a/%a %a/%a@." n Z.pp_print a
+    _DEBUG "  %d %a/%a %a/%a@." n Z.pp_print a
         Z.pp_print b Z.pp_print c Z.pp_print d;
     if n = 0 then
       match cf () with Nil when c = Z.zero -> () | _ -> Format.fprintf fmt "..."
@@ -173,8 +149,8 @@ let print_decimals ~prec fmt x =
         (* FIXME: do we need to simplify ten*.../d ? *)
       ) else match cf () with
       | Nil ->
-          if debug then Format.fprintf fmt "[STOP %a/%a %a/%a]" Z.pp_print a
-                          Z.pp_print b Z.pp_print c Z.pp_print d;
+          Format.fprintf fmt "[STOP %a/%a %a/%a]" Z.pp_print a
+            Z.pp_print b Z.pp_print c Z.pp_print d;
           print_rat n fmt c d
       | Cons (z, cf) ->
           print n c d Z.(z * c + a) Z.(z * d + b) fmt cf
@@ -286,20 +262,19 @@ let _print_bound fmt = function
 let homography ?(a=Z.zero) ?(b=Z.zero) ?(c=Z.zero) ?(d=Z.zero) x =
   if c = Z.zero && d = Z.zero then invalid_arg "homography";
   let rec next a b c d x () =
-    if debug then
-      Format.eprintf "state is %a %a / %a %a@."
+    _DEBUG "state is %a %a / %a %a@."
         Z.pp_print a Z.pp_print b Z.pp_print c Z.pp_print d;
     if c = Z.zero && d = Z.zero then
       Nil
     else match bound a c, bound b d with
     | Fin q, Fin q' when q = q' -> (* egest *)
-        if debug then Format.eprintf "egest %a@." Z.pp_print q;
+        _DEBUG "egest %a@." Z.pp_print q;
         Cons (q, next c d Z.(a - q * c) Z.(b - q * d) x)
     | _ -> (match x () with (* ingest *)
         | Nil ->
             next b b d d x ()
         | Cons (p, x) ->
-            if debug then Format.eprintf "ingest %a@." Z.pp_print p;
+            _DEBUG "ingest %a@." Z.pp_print p;
             next b Z.(a + p * b) d Z.(c + p * d) x ()) in
   next a b c d x
 
@@ -345,16 +320,15 @@ let bihomography
   if e = Z.zero && f = Z.zero && g = Z.zero && h = Z.zero then
     invalid_arg "bihomography";
   let rec next a b c d e f g h x y () =
-    if debug then
-      Format.eprintf "state is %a %a %a %a / %a %a %a %a@."
-        Z.pp_print a Z.pp_print b Z.pp_print c Z.pp_print d
-        Z.pp_print e Z.pp_print f Z.pp_print g Z.pp_print h;
+    _DEBUG "state is %a %a %a %a / %a %a %a %a@."
+      Z.pp_print a Z.pp_print b Z.pp_print c Z.pp_print d
+      Z.pp_print e Z.pp_print f Z.pp_print g Z.pp_print h;
     if e = Z.zero && f = Z.zero && g = Z.zero && h = Z.zero then
       Nil
     else match bound a e, bound c g, bound b f, bound d h with
     | Fin q, Fin q2, Fin q3, Fin q4 when q = q2 && q2 = q3 && q3 = q4 ->
         (* egest *)
-        if debug then Format.eprintf "egest %a@." Z.pp_print q;
+        _DEBUG "egest %a@." Z.pp_print q;
         Cons (q, next e         f         g         h
                       Z.(a-q*e) Z.(b-q*f) Z.(c-q*g) Z.(d-q*h) x y)
     | _ ->
@@ -369,7 +343,7 @@ let bihomography
           next b b d d
                f f h h x y ()
       | Cons (p, x) ->
-          if debug then Format.eprintf "ingest x => %a@." Z.pp_print p;
+          _DEBUG "ingest x => %a@." Z.pp_print p;
           next b Z.(a+b*p) d Z.(c+d*p)
                f Z.(e+f*p) h Z.(g+h*p) x y ()
     and ingest_y a b c d e f g h x y = match y () with
@@ -377,7 +351,7 @@ let bihomography
           next c d c d
                g h g h x y ()
       | Cons (q, y) ->
-          if debug then Format.eprintf "ingest y => %a@." Z.pp_print q;
+          _DEBUG "ingest y => %a@." Z.pp_print q;
           next c d Z.(a+c*q) Z.(b+d*q)
                g h Z.(e+g*q) Z.(f+h*q) x y ()
   in
@@ -413,9 +387,9 @@ let rec memo cf =
 *)
 let generalized ?(a=Z.zero) ?(b=Z.one) ?(c=Z.one) ?(d=Z.zero) g =
   let rec loop pold qold p q num den g () =
-    if debug then Format.eprintf "LOOP %a/%a %a/%a %a/%a@."
-        Z.pp_print pold Z.pp_print qold Z.pp_print p Z.pp_print q
-        Z.pp_print num Z.pp_print den;
+    _DEBUG "LOOP %a/%a %a/%a %a/%a@."
+      Z.pp_print pold Z.pp_print qold Z.pp_print p Z.pp_print q
+      Z.pp_print num Z.pp_print den;
     let pold, qold, p, q =
       p, q, Z.(pold*num + p*den), Z.(qold*num + q*den) in
     let pold, qold, p, q = Z.(
@@ -424,8 +398,8 @@ let generalized ?(a=Z.zero) ?(b=Z.one) ?(c=Z.one) ?(d=Z.zero) g =
         divexact pold t, divexact qold t, divexact p t, divexact q t
       else
         pold, qold, p, q) in
-    if debug then Format.eprintf "LOOP %a/%a %a/%a@."
-        Z.pp_print pold Z.pp_print qold Z.pp_print p Z.pp_print q;
+    _DEBUG "LOOP %a/%a %a/%a@."
+      Z.pp_print pold Z.pp_print qold Z.pp_print p Z.pp_print q;
     if qold = Z.zero then
       input pold qold p q g
     else
