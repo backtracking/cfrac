@@ -149,7 +149,7 @@ let print_decimals ~prec fmt x =
         (* FIXME: do we need to simplify ten*.../d ? *)
       ) else match cf () with
       | Nil ->
-          Format.fprintf fmt "[STOP %a/%a %a/%a]" Z.pp_print a
+          _DEBUG "[STOP %a/%a %a/%a]" Z.pp_print a
             Z.pp_print b Z.pp_print c Z.pp_print d;
           print_rat n fmt c d
       | Cons (z, cf) ->

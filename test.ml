@@ -20,7 +20,7 @@ let () =
     Q.pp_print (best_approx (Z.of_int 1_000_000) pi)
 
 let () = display "phi" phi
-let () = printf "phi = %.15f (%.15f)@.@." (to_float phi) ((1. +. sqrt 5.) /. 2.)
+let () = assert (to_float phi = (1. +. sqrt 5.) /. 2.)
 let () = assert (nth_convergent 0 pi = Q.of_int 3)
 let () = assert (nth_convergent 1 pi = Q.of_ints 22 7)
 let () = assert (nth_convergent 3 pi = Q.of_ints 355 113)
@@ -59,7 +59,6 @@ let () = display "sqrt(2)/2" (idiv sqrt2 2)
 let () = assert (to_float sqrt2 = sqrt 2.)
 
 let () = display "sqrt(3)" sqrt3
-
 
 let () = display "1*1" (mul one one)
 
