@@ -279,6 +279,7 @@ let zadd a x = homography ~a ~b:Z.one ~c:Z.one x
 let iadd a x = ihomography ~a ~b:1 ~c:1 x
 let zmul b x = homography ~b ~c:Z.one x
 let imul b x = ihomography ~b ~c:1 x
+let neg x = ihomography ~b:(-1) ~c:1 x
 let zdiv x c = homography ~b:Z.one ~c x
 let idiv x c = ihomography ~b:1 ~c x
 
@@ -372,6 +373,7 @@ let add x y = ibihomography ~b:1 ~c:1         ~e:1          x y
 let sub x y = ibihomography ~b:1 ~c:(-1)      ~e:1          x y
 let mul x y = ibihomography              ~d:1 ~e:1          x y
 let div x y = ibihomography ~b:1                       ~g:1 x y
+let sqr x = mul x x
 
 type 'a memo = Done of 'a | Todo of (unit -> 'a)
 
@@ -456,6 +458,17 @@ let pi = memo pi
 
 (* e = [2; 1,2,1, 1,4,1, 1,6,1, 1,8,1, ...] = [2; (1, 2n+2, 1)] *)
 let e = periodic [two] (fun n -> [Z.one; Z.of_int (2*n+2); Z.one])
+
+let tan1 = periodic [Z.one; Z.one] (fun n -> [Z.one; Z.of_int (2*n+3)])
+
+let tan_iinv n =
+  if n <= 1 then invalid_arg "tan_iinv";
+  periodic [Z.zero; Z.of_int (n-1)] (fun k -> [Z.one; Z.of_int ((2*k+3)*n-2)])
+
+let exp_iinv n =
+  if n <= 1 then invalid_arg "exp_iinv";
+  periodic [Z.one; Z.of_int (n-1)]
+    (fun k -> [Z.one; Z.one; Z.of_int ((2*k+3)*n-1)])
 
 (** {Semi-computable functions} *)
 

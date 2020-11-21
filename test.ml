@@ -2,10 +2,10 @@
 open Format
 open Cfrac
 
-let display ?(n=10) name cf =
+let display ?(n=10) ?(decimals=30) name cf =
   printf "%s = %a@." name (print ~prec:n) cf;
-  printf "  = %a@." (print_convergents ~prec:n) cf;
-  printf "  = %a@." (print_decimals ~prec:20) cf;
+  printf "  = %a@." (print_convergents ~prec:10) cf;
+  printf "  = %a@." (print_decimals ~prec:decimals) cf;
   printf "  ~ %.15f@." (to_float cf);
   printf "@."
 
@@ -14,12 +14,12 @@ let displayq s = display s (of_qstring s)
 let () = display "0" zero
 let () = display "1" one
 
-let () = display "pi" pi
+let () = display ~n:100 ~decimals:1000 "pi" pi
 let () =
   printf "approx pi 10-6 = %a@.@."
     Q.pp_print (best_approx (Z.of_int 1_000_000) pi)
 
-let () = display "phi" phi
+let () = display ~decimals:100 "phi" phi
 let () = assert (to_float phi = (1. +. sqrt 5.) /. 2.)
 let () = assert (nth_convergent 0 pi = Q.of_int 3)
 let () = assert (nth_convergent 1 pi = Q.of_ints 22 7)
@@ -49,7 +49,7 @@ let () =
 let () =
   let x = of_q (Q.of_string "13/11") in
   display "13/11" x;
-  display "x+1/2" (ihomography ~a:1 ~b:2 ~c:2 x);
+  display "13/11+1/2" (ihomography ~a:1 ~b:2 ~c:2 x);
   display "13/11 * 11" (imul 11 x);
   display "13/11 / 13" (idiv x 13)
 
@@ -101,16 +101,21 @@ let () =
   display "coth(1/2) = (e+1)/(e-1)" cf
 
 let () = displayq "1/7"
-let () = printf "pi = %a@." (print_decimals ~prec:100) pi
-let () = printf "phi = %a@." (print_decimals ~prec:1000) phi
 
 let () =
   for n = 2 to 31 do
     printf "1/%2d = %a@." n (print_decimals ~prec:60) (iinv n)
-  done
+  done;
+  printf "@."
 
 let () = display "pi^2/6" (ibihomography ~d:1 pi pi ~e:6)
 
 let () = displayq "-143/12"
-let () = display "sqrt(2) - phi" (sub sqrt2 phi)
+
+let () = display "tan(1)" tan1
+let () = display "tan(1/2)" (tan_iinv 2)
+let () = display "tan(1/1000)" (tan_iinv 1000)
+let () = display "exp(1/2)" (exp_iinv 2)
+let () = display "exp(1/2)^2" (let x = memo (exp_iinv 2) in mul x x)
+
 

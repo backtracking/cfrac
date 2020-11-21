@@ -15,9 +15,7 @@
 
 (** Continued fractions.
 
-    This is one (cute) way of implementing real numbers in a computer.
-
-    It provides simple continued fractions, which means
+    This module implements simple continued fractions, which means
     it represents a real number x as
 
                      1
@@ -194,6 +192,7 @@ val iadd: int -> t -> t
 
 val zmul: Z.t -> t -> t
 val imul: int -> t -> t
+val neg: t -> t
 
 val zdiv: t -> Z.t -> t
 val idiv: t -> int -> t
@@ -218,6 +217,7 @@ val add: t -> t -> t
 val sub: t -> t -> t
 val mul: t -> t -> t
 val div: t -> t -> t
+val sqr: t -> t
 
 val generalized: ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t -> Z.t Seq.t -> t
 (** ...
@@ -235,11 +235,20 @@ val pi: t
 val e: t
 (** Euler's number. *)
 
+val exp_iinv: int -> t
+(** exp(1/n) for n>1 *)
+
 val sqrt2: t
 (** Square root of 2. *)
 
 val sqrt3: t
 (** Square root of 3. *)
+
+val tan1: t
+(** tan(1) *)
+
+val tan_iinv: int -> t
+(** tan(1/n) for n>1 *)
 
 (** {2 Semi-computable functions}
 
