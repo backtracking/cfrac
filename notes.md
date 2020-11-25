@@ -1,6 +1,8 @@
 
 # TODO
 
+* E-fractions from [1]
+
 * Pell-Fermat i.e. the CF of sqrt(n) for a non-square integer n
 * solutions of quadratic equations
     i.e. (a + b sqrt(c)) / d
@@ -9,7 +11,8 @@
 * other ``semi-computable'' functions
   * shortcuts lt, le, gt, ge?
 * sqrt(n^2 + 1) = [n; 2n, 2n, ...]
-* Euclidean part [1, p. 8]
+* coth(1/n) = [n; 3n, 5n, ...]
+  cf https://crypto.stanford.edu/pbc/notes/contfrac/cheat.html
 
 # Sources
 

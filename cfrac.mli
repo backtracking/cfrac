@@ -13,9 +13,9 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(** Continued fractions.
+(** Classical Continued Fractions.
 
-    This module implements simple continued fractions, which means
+    This module implements classical continued fractions, which means
     it represents a real number x as
 
                      1

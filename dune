@@ -13,3 +13,8 @@
  (name bench)
  (modules bench)
  (libraries unix cfrac))
+
+(executable
+ (name pi)
+ (modules pi)
+ (libraries cfrac))

@@ -33,6 +33,8 @@ let convergents cf =
     | Cons (an, cf) ->
         let hn = Z.(an * hn_1 + hn_2) in
         let kn = Z.(an * kn_1 + kn_2) in
+        (* we know that kn>0 and that hn,kn are relatively prime
+           so we can safely skip Q.make *)
         Cons (Q.{ num = hn; den = kn }, seq hn_1 hn kn_1 kn cf) in
   seq Z.zero Z.one Z.one Z.zero cf
 
@@ -185,7 +187,7 @@ let of_q Q.{ num; den } =
   fun () -> Cons (q, euclid den r)
 
 let iinv n =
-  of_q Q.{ num = Z.one; den = Z.of_int n }
+  of_q (Q.make Z.one (Z.of_int n))
 
 let of_qstring s =
   of_q (Q.of_string s)
@@ -424,7 +426,7 @@ let generalized ?(a=Z.zero) ?(b=Z.one) ?(c=Z.one) ?(d=Z.zero) g =
         input pold qold p q g
     and input pold qold p q g = match g () with
       | Nil ->
-          of_q Q.{ num = p; den = q } ()
+          of_q (Q.make p q) ()
       | Cons (num, g) ->
           let den, g = first g in
           loop pold qold p q num den g ()

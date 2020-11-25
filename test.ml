@@ -3,7 +3,7 @@ open Format
 open Cfrac
 
 let display ?(n=10) ?(decimals=30) name cf =
-  printf "%s = %a@." name (print ~prec:n) cf;
+  printf "%s@.  = %a@." name (print ~prec:n) cf;
   printf "  = %a@." (print_convergents ~prec:10) cf;
   printf "  = %a@." (print_decimals ~prec:decimals) cf;
   printf "  ~ %.15f@." (to_float cf);
@@ -118,4 +118,4 @@ let () = display "tan(1/1000)" (tan_iinv 1000)
 let () = display "exp(1/2)" (exp_iinv 2)
 let () = display "exp(1/2)^2" (let x = memo (exp_iinv 2) in mul x x)
 
-
+let () = display "-1/7" (iinv (-7))
