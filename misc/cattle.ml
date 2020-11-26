@@ -20,9 +20,28 @@ let () =
   printf "d =  3 515 820 * k dappled cows@.";
   printf "y =  5 439 213 * k yellow cows@.";
 
-(* After 3 minutes of computation, we find
+open Z
 
-   q = 1858921901...0208663490 (103266 digits)
-   k = ...
+let total =
+  let k = of_int 4_456_749 * q * q in
+  (of_int  7_460_514 +
+   of_int 10_366_482 +
+   of_int  7_358_060 +
+   of_int  4_149_387 +
+   of_int  4_893_246 +
+   of_int  7_206_360 +
+   of_int  3_515_820 +
+   of_int  5_439_213 ) * k
 
-   See enclosed file cattle.out. *)
+let () =
+  printf "Total number of cattle in the herd is@.";
+  printf "%a@." Z.pp_print total
+
+(* After 3 minutes of computation, we get
+
+q = 1858921901...0208663490 (103266 digits)
+...
+Total number of cattle in the herd is
+7760271406...9455081800 (206545 digits)
+
+See enclosed file cattle.out. *)
