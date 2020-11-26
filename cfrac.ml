@@ -501,6 +501,17 @@ let sqrt_z d =
 let sqrt_int d =
   sqrt_z (Z.of_int d)
 
+let pell_fermat ?(neg=false) n =
+  let cf, m =
+    try sqrt_z n with Invalid_argument _ -> invalid_arg "pell_fermat" in
+  let t = if neg then Z.minus_one else Z.one in
+  let f Q.{num=x; den=y} =
+    if Z.(x*x - n*y*y = t) then Some (x, y) else None in
+  if neg && m land 1 = 0 then empty else Seq.filter_map f (convergents cf)
+
+let pell_fermat_int ?neg n =
+  pell_fermat ?neg (Z.of_int n)
+
 (** {Semi-computable functions} *)
 
 type 'a semi = Sure of 'a | CantDecide

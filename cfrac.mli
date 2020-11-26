@@ -240,8 +240,8 @@ val e: t
 (** Euler's number. *)
 
 val sqrt_int: int -> t * int
-val sqrt_z: Z.t -> t * int
-(** The continued fraction of sqrt(d) for a non-square positive integer d.
+val sqrt_z  : Z.t -> t * int
+(** The continued fraction of sqrt(d) for a positive nonsquare integer d.
     This function also returns the length n of the period i.e. the
     continued fraction is [a0; (a1,a2,...,an)* ]. *)
 
@@ -259,6 +259,26 @@ val exp_iinv: int -> t
 
 val tan_iinv: int -> t
 (** tan(1/n) for n>1 *)
+
+(** {2 Pell-Fermat equation} *)
+
+val pell_fermat_int: ?neg:bool -> int -> (Z.t * Z.t) Seq.t
+val pell_fermat    : ?neg:bool -> Z.t -> (Z.t * Z.t) Seq.t
+(** Given a positive nonsquare integer n, returns all the positive
+    solutions to the Pell-Fermat equation, that is
+
+        x^2 - n y^2 = 1
+
+    There are infinitely many solutions. The first solution (x,y) is
+    the one that minimizes x and it is called the fundamental solution.
+
+    When neg is given the value true, [pell_fermat] computes instead the
+    solutions to the *negative* Pell-Fermat equation, that is
+
+        x^2 - n y^2 = -1
+
+    In this case, there are solutions iff the period of the continued fraction
+    for sqrt(n) has odd length. *)
 
 (** {2 Semi-computable functions}
 

@@ -134,3 +134,21 @@ let () =
   done;
   printf "max period %d for d=%d@." !maxp !maxi
 
+let () =
+  let pf neg =
+    printf "Pell-Fermat equation x^2-dy^2 = %d@." (if neg then -1 else 1);
+    for d = 2 to 167 do
+      try
+        let s = pell_fermat_int ~neg d in
+        printf "  d = %3d: @[" d;
+        let rec print fuel s =
+          if fuel = 0 then printf "...@]@." else match s () with
+          | Seq.Nil -> printf "no solutions@]@."
+          | Cons ((x,y), s) -> printf "%a,%a /@ " Z.pp_print x
+                             Z.pp_print y; print (fuel-1) s in
+        print 5 s
+      with Invalid_argument _ -> ()
+    done in
+  pf false;
+  pf true
+

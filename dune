@@ -1,6 +1,12 @@
+(env
+ (dev
+  (flags (:standard -warn-error -26-27-32)))
+ ;; (release
+ ;;  (flags (:standard -O3)))
+)
+
 (library
  (name cfrac)
- (flags (:standard -warn-error -26-32))
  (modules cfrac)
  (libraries zarith))
 
