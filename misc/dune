@@ -3,3 +3,8 @@
  (name pi)
  (modules pi)
  (libraries cfrac))
+
+(executable
+ (name cattle)
+ (modules cattle)
+ (libraries cfrac))
