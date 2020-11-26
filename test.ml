@@ -120,3 +120,17 @@ let () = display "exp(1/2)^2" (let x = memo (exp_iinv 2) in mul x x)
 
 let () = display "-1/7" (iinv (-7))
 
+let () =
+  let maxp = ref 0 in
+  let maxi = ref 0 in
+  for i = 2 to 167 do
+    let d = Z.of_int i in
+    try
+      let cf, prec = sqrt_z d in
+      if prec > !maxp then (maxp := prec; maxi := i);
+      let prec = min prec 15 in
+      printf "sqrt(%3d) = %a@." i (print ~prec) cf
+    with Invalid_argument _ -> ()
+  done;
+  printf "max period %d for d=%d@." !maxp !maxi
+

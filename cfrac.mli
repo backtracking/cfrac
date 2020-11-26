@@ -33,10 +33,11 @@
     When it is finite, the last term is > 1 (canonical CF).
 
     When it is infinite, it is periodic (after some initial terms) iff
-    the number is an irrational real root of a quadratic equation
-    ax^2+bx+c=0.
+    the number is an irrational root of a quadratic equation ax^2+bx+c=0.
+    (See function [sqrt_z] below.)
 
-    Such continued fractions are also called N-fractions.
+    Note: Such continued fractions are also called N-fractions in the
+    literature.
 *)
 
 type t
@@ -111,8 +112,8 @@ val print_decimals: prec:int -> Format.formatter -> t -> unit
     respectively. (Note that the period displayed for 1/29 could be shifted
     one position to the left. This happens when the very first decimal is 0
     and is part of the periodic sequence.) If you ever print 1/29 with too
-    few decimals, say 15, then the period is not shown anymore (and instead
-    we get the ellipsis "..."):
+    few decimals, say 15, then the period is not shown anymore and instead
+    we get the ellipsis "...":
 
       0.034482758620689...
 *)
@@ -228,7 +229,8 @@ val generalized: ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t -> Z.t Seq.t -> t
 (** {2 Some continued fractions} *)
 
 val phi: t
-(** The golden ratio i.e. (1+sqrt(5))/2. *)
+(** The golden ratio i.e. (1+sqrt(5))/2.
+    This is the continued fraction [1; 1, 1, 1, ...]. *)
 
 val pi: t
 (** Does this really need an explanation?
@@ -237,8 +239,11 @@ val pi: t
 val e: t
 (** Euler's number. *)
 
-val exp_iinv: int -> t
-(** exp(1/n) for n>1 *)
+val sqrt_int: int -> t * int
+val sqrt_z: Z.t -> t * int
+(** The continued fraction of sqrt(d) for a non-square positive integer d.
+    This function also returns the length n of the period i.e. the
+    continued fraction is [a0; (a1,a2,...,an)* ]. *)
 
 val sqrt2: t
 (** Square root of 2. *)
@@ -248,6 +253,9 @@ val sqrt3: t
 
 val tan1: t
 (** tan(1) *)
+
+val exp_iinv: int -> t
+(** exp(1/n) for n>1 *)
 
 val tan_iinv: int -> t
 (** tan(1/n) for n>1 *)

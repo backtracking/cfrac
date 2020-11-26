@@ -234,6 +234,12 @@ let periodic prefix f = match prefix with
   | [] -> invalid_arg "periodic"
   | z :: l -> fun () -> Cons (z, list_concat l (list_flatten f 0))
 
+let rec concat s1 s2 () = match s1 () with
+  | Nil -> s2 ()
+  | Cons (z, s) -> Cons (z, concat s s2)
+
+let rec repeat s () = concat s (repeat s) ()
+
 (** {2 Homographic functions (Bill Gosper, 1972)}
 
   Resources:
@@ -471,6 +477,29 @@ let exp_iinv n =
   if n <= 1 then invalid_arg "exp_iinv";
   periodic [Z.one; Z.of_int (n-1)]
     (fun k -> [Z.one; Z.one; Z.of_int ((2*k+3)*n-1)])
+
+(* Source: https://www.cs.jhu.edu/~jason/software/fractions/ *)
+let sqrt_z d =
+  if Z.(d <= one) then invalid_arg "sqrt_z";
+  let sd = Z.sqrt d in
+  if d = Z.mul sd sd then invalid_arg "sqrt_z";
+  let target = Z.mul two sd in
+  let rec loop l a b c = (* (a + b sqrt(d)) / c *)
+    let bbd = Z.(b * b * d) in
+    let q = Z.(fdiv (a + sqrt bbd) c) in
+    let a = Z.(a - c*q) in
+    let a, b, c = Z.(-a*c, b*c, bbd - a*a) in
+    let g = Z.gcd (Z.gcd a b) c in
+    let a, b, c = Z.divexact a g, Z.divexact b g, Z.divexact c g in
+    let l = q :: l in
+    if q = target then List.to_seq (List.rev l), List.length l
+    else loop l a b c
+  in
+  let s, prec = loop [] sd Z.one Z.(d - sd*sd) in
+  (fun () -> Cons (sd, repeat s)), prec
+
+let sqrt_int d =
+  sqrt_z (Z.of_int d)
 
 (** {Semi-computable functions} *)
 

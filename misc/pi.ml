@@ -4,6 +4,10 @@ open Seq
 open Cfrac
 
 let limit = ref max_int
+let () =
+  Arg.parse
+    ["-n", Arg.Set_int limit, "<int>";]
+    (fun _ -> ()) "pi [-n steps]"
 
 let rec loop n cf =
   if n mod 1000 = 0 then printf "@?";
@@ -13,4 +17,6 @@ let rec loop n cf =
   | Cons (z, cf) -> printf "%a,@ " Z.pp_print z; loop (n+1) cf
 
 let () =
-  loop 0 (terms pi)
+  loop 0 (terms pi);
+  printf "@."
+

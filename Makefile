@@ -3,7 +3,7 @@ all:
 	dune build
 
 test:
-	dune runtest --display quiet --no-buffer
+	dune runtest -f --display quiet --no-buffer
 
 bench:
 	dune exec ./bench.exe

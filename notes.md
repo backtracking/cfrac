@@ -4,9 +4,6 @@
 * E-fractions from [1]
 
 * Pell-Fermat i.e. the CF of sqrt(n) for a non-square integer n
-* solutions of quadratic equations
-    i.e. (a + b sqrt(c)) / d
-    i.e. periodic CF
 * square root of a CF via Newton's method
 * other ``semi-computable'' functions
   * shortcuts lt, le, gt, ge?
@@ -26,3 +23,5 @@
 
   https://crypto.stanford.edu/pbc/notes/contfrac/
   https://github.com/blynn/frac
+
+  https://www.cs.jhu.edu/~jason/software/fractions/
