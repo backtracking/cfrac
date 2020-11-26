@@ -119,3 +119,4 @@ let () = display "exp(1/2)" (exp_iinv 2)
 let () = display "exp(1/2)^2" (let x = memo (exp_iinv 2) in mul x x)
 
 let () = display "-1/7" (iinv (-7))
+

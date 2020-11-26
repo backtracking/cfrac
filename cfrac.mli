@@ -35,6 +35,8 @@
     When it is infinite, it is periodic (after some initial terms) iff
     the number is an irrational real root of a quadratic equation
     ax^2+bx+c=0.
+
+    Such continued fractions are also called N-fractions.
 *)
 
 type t
