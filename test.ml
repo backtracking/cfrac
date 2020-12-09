@@ -152,3 +152,20 @@ let () =
   pf false;
   pf true
 
+let test_interval msg x =
+  printf "intervals for %s@.  = %a@." msg (print ~prec:10) x;
+  let print n =
+    let prec = { Q.num = Z.one; den = Z.of_int n } in
+    let lo, hi = interval prec x in
+    let delta = Q.(to_float (hi - lo)) in
+    assert (delta < 1. /. float n);
+    printf "  = %a..%a = %f..%f (delta = %f < 1/%d)@."
+      Q.pp_print lo Q.pp_print hi (Q.to_float lo) (Q.to_float hi) delta n in
+  print 1;
+  print 1_000;
+  print 1_000_000
+
+let () = test_interval "1" one
+let () = test_interval "1/7" (iinv 7)
+let () = test_interval "pi" pi
+let () = test_interval "sqrt(2)" sqrt2

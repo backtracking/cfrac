@@ -54,6 +54,20 @@ let best_approx d x =
   let q, cv = first (convergents x) in
   lookup q cv
 
+let interval prec x =
+  if Q.sign prec <= 0 then invalid_arg "interval";
+  let rec lookup lo hi cv =
+    if Q.(hi - lo <= prec) then lo, hi
+    else match cv () with
+    | Nil -> hi, hi
+    | Cons (lo', cv) -> match cv () with
+                        | Nil -> lo', lo'
+                        | Cons (hi', cv) -> lookup lo' hi' cv in
+  let q0, cv = first (convergents x) in
+  match cv () with
+  | Nil -> q0, q0
+  | Cons (q1, cv) -> lookup q0 q1 cv
+
 let two = Z.of_int 2
 
 (* Conversion to a float (algorithm by Guillaume Melquiond):

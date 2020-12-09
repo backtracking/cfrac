@@ -86,6 +86,10 @@ val best_approx: Z.t -> t -> Q.t
     Said otherwise, if [best_approx] returns p/q, then we have
     |qx-p| < |bx-a| for any other approximation a/b of x with b <= d. *)
 
+val interval: Q.t -> t -> Q.t * Q.t
+(** [interval e x] returns a rational interval containing [x], of
+    width no greater than [e]. *)
+
 val to_float: t -> float
 (** Converts to a floating-point number.
     The result is the floating-point number closest to the given
@@ -101,7 +105,7 @@ val print_decimals: prec:int -> Format.formatter -> t -> unit
     If there are more decimals to come, an ellipsis "..." is printed.
     Otherwise, the list ends with the last decimal.
 
-    Whenever the number if rational, with infinitely many decimals,
+    Whenever the number is rational with infinitely many decimals,
     decimals are periodic and [print_decimals] shows the period
     whenever it fits within the required precision [prec].
     For instance, 1/28 and 1/29 are printed as
