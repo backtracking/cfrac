@@ -169,3 +169,11 @@ let () = test_interval "1" one
 let () = test_interval "1/7" (iinv 7)
 let () = test_interval "pi" pi
 let () = test_interval "sqrt(2)" sqrt2
+
+let () =
+  let x = ref e in
+  for n = 1 to 50 do x := imul n (iadd (-1) !x) done;
+  display "after 50 years, I'll get" (iadd (-1) !x)
+
+
+
