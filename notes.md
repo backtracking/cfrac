@@ -3,7 +3,6 @@
 
 * E-fractions from [1]
 
-* interval for a given (maximal) width
 * square root of a CF via Newton's method
 * other ``semi-computable'' functions
   * shortcuts lt, le, gt, ge?
