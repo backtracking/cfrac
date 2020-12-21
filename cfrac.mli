@@ -314,5 +314,9 @@ val compare: ?fuel:int -> t -> t -> int semi
     out before we run out of fuel). *)
 
 val equal: ?fuel:int -> t -> t -> bool semi
+val lt   : ?fuel:int -> t -> t -> bool semi
+val le   : ?fuel:int -> t -> t -> bool semi
+val gt   : ?fuel:int -> t -> t -> bool semi
+val ge   : ?fuel:int -> t -> t -> bool semi
 
 val is_rational: ?fuel:int -> t -> bool semi

@@ -64,14 +64,16 @@ let () = display "1*1" (mul one one)
 
 let () = display "355/113 * 113/355" (mul (of_qstring "355/113") (of_qstring "113/355"))
 
-let () = assert (compare (of_qstring "1/7") (of_qstring "1/5") = Sure (-1))
-let () = assert (compare (of_qstring "1/5") (of_qstring "1/5") = Sure 0)
+let () = assert (lt (of_qstring "1/7") (of_qstring "1/5") = Sure true)
+let () = assert (equal (of_qstring "1/5") (of_qstring "1/5") = Sure true)
 
 let () = assert (compare sqrt2 (of_qstring "15/10") = Sure (-1))
-let () = assert (compare (of_qstring "15/10") sqrt2 = Sure 1)
+let () = assert (gt (of_qstring "15/10") sqrt2 = Sure true)
 let () = assert (compare sqrt2 (of_qstring "14/10") = Sure 1)
 let () = assert (compare (of_qstring "14/10") sqrt2 = Sure (-1))
 let () = assert (compare phi phi = CantDecide)
+let () = assert (le phi phi = CantDecide)
+let () = assert (lt sqrt2 phi = Sure true)
 
 let () = assert (to_float (of_qstring "1/2") = 0.5)
 let () = printf "0.01 ~ %.15f@.@." (to_float (of_qstring "1/100"))

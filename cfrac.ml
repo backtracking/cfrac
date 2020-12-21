@@ -537,11 +537,11 @@ let compare ?(fuel=default_fuel) x y =
     if fuel = 0 then CantDecide else
     match x(), y () with
     | Nil, Nil -> Sure 0
-    | Nil, Cons _ -> Sure (if even then 1 else -1)
-    | Cons _, Nil -> Sure (if even then -1 else 1)
+    | Nil, Cons _ -> Sure (if even then +1 else -1)
+    | Cons _, Nil -> Sure (if even then -1 else +1)
     | Cons (zx, x), Cons (zy, y) ->
         let c = Z.compare zx zy in
-        if c <> 0 then Sure (if if even then c < 0 else c > 0 then -1 else 1)
+        if c <> 0 then Sure (if if even then c < 0 else c > 0 then -1 else +1)
         else cmp (fuel - 1) (not even) x y in
   cmp fuel true x y
 
@@ -549,6 +549,14 @@ let partial f = function CantDecide -> CantDecide | Sure x -> Sure (f x)
 
 let equal ?(fuel=default_fuel) x y =
   partial ((=) 0) (compare ~fuel x y)
+let lt ?(fuel=default_fuel) x y =
+  partial (fun c -> c < 0) (compare ~fuel x y)
+let le ?(fuel=default_fuel) x y =
+  partial (fun c -> c <= 0) (compare ~fuel x y)
+let gt ?(fuel=default_fuel) x y =
+  partial (fun c -> c > 0) (compare ~fuel x y)
+let ge ?(fuel=default_fuel) x y =
+  partial (fun c -> c >= 0) (compare ~fuel x y)
 
 let is_rational ?(fuel=default_fuel) x =
   let rec lookup fuel x =

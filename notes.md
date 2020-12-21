@@ -5,7 +5,6 @@
 
 * square root of a CF via Newton's method
 * other ``semi-computable'' functions
-  * shortcuts lt, le, gt, ge?
 * sqrt(n^2 + 1) = [n; 2n, 2n, ...]
 * coth(1/n) = [n; 3n, 5n, ...]
   cf https://crypto.stanford.edu/pbc/notes/contfrac/cheat.html
