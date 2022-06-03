@@ -177,5 +177,5 @@ let () =
   for n = 1 to 50 do x := imul n (iadd (-1) !x) done;
   display "after 50 years, I'll get" (iadd (-1) !x)
 
-
-
+(* Hanoi's constant. See https://en.wikipedia.org/wiki/Tower_of_Hanoi#General_shortest_paths_and_the_number_466/885 *)
+let () = displayq "466/885"

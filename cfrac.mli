@@ -227,7 +227,8 @@ val div: t -> t -> t
 val sqr: t -> t
 
 val generalized: ?a:Z.t -> ?b:Z.t -> ?c:Z.t -> ?d:Z.t -> Z.t Seq.t -> t
-(** ...
+(** Convert a generalized CF (with arbitrary numerators) to a simple CF.
+    In the meantime, we apply the homography (a+bx)/(c+dx).
     Default values for a,b,c,d are 0,1,1,0 (identity). *)
 
 (** {2 Some continued fractions} *)

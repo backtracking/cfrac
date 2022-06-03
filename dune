@@ -6,7 +6,7 @@
 )
 
 (library
- (name cfrac)
+ (public_name cfrac)
  (modules cfrac)
  (libraries zarith))
 
